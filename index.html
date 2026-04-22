@@ -1,506 +1,1288 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Horizon Global Search</title>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Horizon Global Search</title>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  :root {
-    --bg: #0f1117;
-    --bg2: #161820;
-    --bg3: #1e2030;
-    --bg4: #252838;
-    --border: rgba(255,255,255,0.08);
-    --border2: rgba(255,255,255,0.14);
-    --text: #e2e4ef;
-    --text2: #9093a8;
-    --text3: #5c5f73;
-    --accent: #6366f1;
-    --accent2: #818cf8;
-    --success: #10b981;
-    --warn: #f59e0b;
-    --danger: #ef4444;
-    --info: #3b82f6;
-    --radius: 10px;
-    --radius-sm: 6px;
-    --radius-lg: 14px;
-  }
+    :root {
+      --bg: #0f1117;
+      --bg2: #161820;
+      --bg3: #1e2030;
+      --bg4: #252838;
+      --border: rgba(255, 255, 255, 0.08);
+      --border2: rgba(255, 255, 255, 0.14);
+      --text: #e2e4ef;
+      --text2: #9093a8;
+      --text3: #5c5f73;
+      --accent: #6366f1;
+      --accent2: #818cf8;
+      --success: #10b981;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --info: #3b82f6;
+      --radius: 10px;
+      --radius-sm: 6px;
+      --radius-lg: 14px;
+    }
 
-  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.5; min-height: 100vh; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
 
-  /* Layout */
-  .app { display: flex; height: 100vh; overflow: hidden; }
-  .sidebar { width: 220px; flex-shrink: 0; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px 0; }
-  .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+    /* Layout */
+    .app {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
 
-  /* Sidebar */
-  .logo { padding: 0 20px 24px; }
-  .logo-mark { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
-  .logo-mark span { color: var(--accent2); }
-  .logo-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 0;
+    }
 
-  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 20px; cursor: pointer; font-size: 13px; color: var(--text2); border-left: 2px solid transparent; transition: all 0.15s; }
-  .nav-item:hover { color: var(--text); background: var(--bg3); }
-  .nav-item.active { color: var(--accent2); border-left-color: var(--accent); background: rgba(99,102,241,0.08); }
-  .nav-icon { width: 16px; text-align: center; font-size: 15px; }
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
 
-  /* Top bar */
-  .topbar { padding: 16px 28px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
-  .topbar-title { font-size: 16px; font-weight: 600; color: var(--text); }
-  .topbar-sub { font-size: 12px; color: var(--text3); margin-top: 1px; }
+    /* Sidebar */
+    .logo {
+      padding: 0 20px 24px;
+    }
 
-  /* Content areas */
-  .content { padding: 24px 28px; flex: 1; }
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
+    .logo-mark {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
 
-  /* Search box area */
-  .search-wrap { position: relative; margin-bottom: 20px; }
-  .search-input-row { display: flex; gap: 10px; align-items: center; }
-  .search-box { flex: 1; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); padding: 12px 16px 12px 42px; font-size: 15px; color: var(--text); outline: none; transition: border 0.15s; }
-  .search-box:focus { border-color: var(--accent); }
-  .search-box::placeholder { color: var(--text3); }
-  .search-icon-wrap { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 16px; pointer-events: none; }
-  .search-input-wrap { position: relative; flex: 1; }
+    .logo-mark span {
+      color: var(--accent2);
+    }
 
-  /* Entity filter chips */
-  .filter-chips { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
-  .filter-label { font-size: 12px; color: var(--text3); }
-  .chip { padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border2); font-size: 12px; cursor: pointer; color: var(--text2); background: var(--bg3); transition: all 0.15s; }
-  .chip:hover { border-color: var(--accent); color: var(--accent2); }
-  .chip.active { background: rgba(99,102,241,0.15); border-color: var(--accent); color: var(--accent2); }
-  .chip.c-customer.active { background: rgba(59,130,246,0.15); border-color: var(--info); color: #60a5fa; }
-  .chip.c-partner.active { background: rgba(16,185,129,0.15); border-color: var(--success); color: #34d399; }
-  .chip.c-claim.active { background: rgba(245,158,11,0.15); border-color: var(--warn); color: #fbbf24; }
+    .logo-sub {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 2px;
+    }
 
-  /* Suggestions dropdown */
-  .suggest-dropdown { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); z-index: 100; overflow: hidden; }
-  .suggest-item { display: flex; align-items: center; gap: 10px; padding: 9px 14px; cursor: pointer; transition: background 0.1s; }
-  .suggest-item:hover { background: var(--bg4); }
-  .suggest-badge { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.4px; flex-shrink: 0; }
-  .badge-customer { background: rgba(59,130,246,0.2); color: #60a5fa; }
-  .badge-partner  { background: rgba(16,185,129,0.2); color: #34d399; }
-  .badge-claim    { background: rgba(245,158,11,0.2); color: #fbbf24; }
-  .badge-unknown  { background: rgba(255,255,255,0.08); color: var(--text2); }
-  .suggest-name { font-size: 13px; color: var(--text); flex: 1; }
-  .suggest-sub { font-size: 11px; color: var(--text3); }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 20px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text2);
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+    }
 
-  /* Search mode tabs */
-  .mode-tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
-  .mode-tab { padding: 6px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border2); font-size: 12px; cursor: pointer; color: var(--text2); background: var(--bg3); transition: all 0.15s; }
-  .mode-tab:hover { color: var(--text); }
-  .mode-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .nav-item:hover {
+      color: var(--text);
+      background: var(--bg3);
+    }
 
-  /* Results section */
-  .results-section { margin-bottom: 28px; }
-  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-  .section-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.6px; }
-  .section-count { font-size: 12px; color: var(--text3); }
-  .section-latency { font-size: 11px; color: var(--success); margin-left: auto; }
-  .method-tag { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 600; letter-spacing: 0.3px; }
-  .method-hybrid   { background: rgba(245,158,11,0.2); color: #fbbf24; }
-  .method-nlq      { background: rgba(239,68,68,0.2); color: #f87171; }
+    .nav-item.active {
+      color: var(--accent2);
+      border-left-color: var(--accent);
+      background: rgba(99, 102, 241, 0.08);
+    }
 
-  /* Result cards */
-  .result-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; transition: border 0.15s; }
-  .result-card:hover { border-color: var(--border2); }
-  .card-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
-  .entity-icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
-  .icon-customer { background: rgba(59,130,246,0.15); color: #60a5fa; }
-  .icon-partner  { background: rgba(16,185,129,0.15); color: #34d399; }
-  .icon-claim    { background: rgba(245,158,11,0.15); color: #fbbf24; }
-  .card-name { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; }
-  .card-ref  { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: monospace; }
-  .card-badges { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-left: auto; flex-shrink: 0; }
-  .card-meta { display: flex; gap: 16px; flex-wrap: wrap; }
-  .meta-item { font-size: 12px; color: var(--text2); }
-  .meta-label { color: var(--text3); margin-right: 4px; }
-  .card-desc { font-size: 12px; color: var(--text3); margin-top: 6px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .card-footer { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); }
-  .score-pill { font-size: 10px; color: var(--text3); background: var(--bg4); padding: 2px 7px; border-radius: 10px; }
-  .status-pill { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
-  .status-open      { background: rgba(16,185,129,0.15); color: #34d399; }
-  .status-closed    { background: rgba(156,163,175,0.15); color: #9ca3af; }
-  .status-cancelled { background: rgba(239,68,68,0.15); color: #f87171; }
-  .status-review    { background: rgba(245,158,11,0.15); color: #fbbf24; }
-  .status-active    { background: rgba(16,185,129,0.15); color: #34d399; }
-  .status-inactive  { background: rgba(156,163,175,0.15); color: #9ca3af; }
+    .nav-icon {
+      width: 16px;
+      text-align: center;
+      font-size: 15px;
+    }
 
-  /* Buttons */
-  .btn { padding: 9px 18px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--bg3); color: var(--text); font-size: 13px; cursor: pointer; transition: all 0.15s; }
-  .btn:hover { background: var(--bg4); }
-  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .btn-primary:hover { background: #4f52d9; }
-  .btn-sm { padding: 5px 12px; font-size: 12px; }
-  .btn-danger { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: #f87171; }
-  .btn-danger:hover { background: rgba(239,68,68,0.2); }
-  .btn-success { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); color: #34d399; }
-  .btn-success:hover { background: rgba(16,185,129,0.2); }
+    /* Top bar */
+    .topbar {
+      padding: 16px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-  /* NLQ area */
-  .nlq-box { background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); padding: 14px; font-size: 14px; color: var(--text); width: 100%; resize: vertical; min-height: 72px; outline: none; font-family: inherit; }
-  .nlq-box:focus { border-color: var(--accent); }
+    .topbar-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
 
-  /* Entity browser */
-  .entity-tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
-  .entity-tab { padding: 9px 20px; font-size: 13px; cursor: pointer; color: var(--text2); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
-  .entity-tab:hover { color: var(--text); }
-  .entity-tab.active { color: var(--accent2); border-bottom-color: var(--accent); }
+    .topbar-sub {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 1px;
+    }
 
-  .browser-controls { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }
-  .browser-search { flex: 1; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 8px 12px; font-size: 13px; color: var(--text); outline: none; }
-  .browser-search:focus { border-color: var(--accent); }
+    /* Content areas */
+    .content {
+      padding: 24px 28px;
+      flex: 1;
+    }
 
-  /* Table */
-  .data-table { width: 100%; border-collapse: collapse; }
-  .data-table th { text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text3); border-bottom: 1px solid var(--border); }
-  .data-table td { padding: 11px 14px; font-size: 13px; color: var(--text2); border-bottom: 1px solid var(--border); vertical-align: middle; }
-  .data-table tr:hover td { background: var(--bg3); }
-  .data-table td.name-cell { color: var(--text); font-weight: 500; }
+    .tab-panel {
+      display: none;
+    }
 
-  /* Pagination */
-  .pagination { display: flex; align-items: center; gap: 8px; margin-top: 16px; justify-content: flex-end; }
-  .page-info { font-size: 12px; color: var(--text3); margin-right: auto; }
+    .tab-panel.active {
+      display: block;
+    }
 
-  /* Index management */
-  .index-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px; }
-  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
-  .stat-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-  .stat-value { font-size: 24px; font-weight: 600; color: var(--text); }
-  .stat-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+    /* Search box area */
+    .search-wrap {
+      position: relative;
+      margin-bottom: 20px;
+    }
 
-  .action-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 24px; }
-  .action-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
-  .action-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-  .action-desc { font-size: 12px; color: var(--text3); margin-bottom: 14px; line-height: 1.5; }
+    .search-input-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
 
-  /* Logs */
-  .log-terminal { background: #0a0c10; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 12px; line-height: 1.7; height: 420px; overflow-y: auto; }
-  .log-line { display: flex; gap: 10px; }
-  .log-time { color: #4b5563; flex-shrink: 0; }
-  .log-level { flex-shrink: 0; font-weight: 600; width: 52px; }
-  .log-info  { color: #60a5fa; }
-  .log-warn  { color: #fbbf24; }
-  .log-error { color: #f87171; }
-  .log-debug { color: #6b7280; }
-  .log-msg   { color: #d1d5db; }
+    .search-box {
+      flex: 1;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      padding: 12px 16px 12px 42px;
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+      transition: border 0.15s;
+    }
 
-  /* Generated query */
-  .code-block { background: #0a0c10; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; font-family: monospace; font-size: 12px; color: #a5f3fc; overflow-x: auto; white-space: pre; margin-top: 10px; }
+    .search-box:focus {
+      border-color: var(--accent);
+    }
 
-  /* Empty state */
-  .empty-state { text-align: center; padding: 48px 20px; color: var(--text3); }
-  .empty-icon { font-size: 32px; margin-bottom: 12px; }
-  .empty-text { font-size: 14px; }
+    .search-box::placeholder {
+      color: var(--text3);
+    }
 
-  /* Loading */
-  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border2); border-top-color: var(--accent2); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+    .search-icon-wrap {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text3);
+      font-size: 16px;
+      pointer-events: none;
+    }
 
-  .loading-row { display: flex; align-items: center; gap: 8px; color: var(--text3); font-size: 13px; padding: 20px 0; }
+    .search-input-wrap {
+      position: relative;
+      flex: 1;
+    }
 
-  /* Notice */
-  .notice { background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 12px; color: var(--accent2); margin-bottom: 16px; }
-  .notice-warn { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.2); color: #fbbf24; }
-  .notice-danger { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.2); color: #f87171; }
-  .notice-success { background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.2); color: #34d399; }
+    /* Entity filter chips */
+    .filter-chips {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
 
-  /* Divider */
-  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+    .filter-label {
+      font-size: 12px;
+      color: var(--text3);
+    }
 
-  /* Generated query expandable */
-  details summary { font-size: 12px; color: var(--text3); cursor: pointer; padding: 6px 0; }
-  details summary:hover { color: var(--text2); }
+    .chip {
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border2);
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--text2);
+      background: var(--bg3);
+      transition: all 0.15s;
+    }
 
-  /* Inline flex helpers */
-  .flex { display: flex; }
-  .items-center { align-items: center; }
-  .gap-8 { gap: 8px; }
-  .mt-8 { margin-top: 8px; }
-  .mt-16 { margin-top: 16px; }
-  .mb-8 { margin-bottom: 8px; }
-  .mb-16 { margin-bottom: 16px; }
-  .ml-auto { margin-left: auto; }
+    .chip:hover {
+      border-color: var(--accent);
+      color: var(--accent2);
+    }
 
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
-</style>
+    .chip.active {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: var(--accent);
+      color: var(--accent2);
+    }
+
+    .chip.c-customer.active {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: var(--info);
+      color: #60a5fa;
+    }
+
+    .chip.c-partner.active {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: var(--success);
+      color: #34d399;
+    }
+
+    .chip.c-claim.active {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: var(--warn);
+      color: #fbbf24;
+    }
+
+    /* Suggestions dropdown */
+    .suggest-dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      z-index: 100;
+      overflow: hidden;
+    }
+
+    .suggest-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 14px;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .suggest-item:hover {
+      background: var(--bg4);
+    }
+
+    .suggest-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      flex-shrink: 0;
+    }
+
+    .badge-customer {
+      background: rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+    }
+
+    .badge-partner {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+    }
+
+    .badge-claim {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+    }
+
+    .badge-unknown {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text2);
+    }
+
+    .suggest-name {
+      font-size: 13px;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .suggest-sub {
+      font-size: 11px;
+      color: var(--text3);
+    }
+
+    /* Search mode tabs */
+    .mode-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .mode-tab {
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border2);
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--text2);
+      background: var(--bg3);
+      transition: all 0.15s;
+    }
+
+    .mode-tab:hover {
+      color: var(--text);
+    }
+
+    .mode-tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* Results section */
+    .results-section {
+      margin-bottom: 28px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .section-count {
+      font-size: 12px;
+      color: var(--text3);
+    }
+
+    .section-latency {
+      font-size: 11px;
+      color: var(--success);
+      margin-left: auto;
+    }
+
+    .method-tag {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .method-hybrid {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+    }
+
+    .method-nlq {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+    }
+
+    /* Result cards */
+    .result-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      transition: border 0.15s;
+    }
+
+    .result-card:hover {
+      border-color: var(--border2);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .entity-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .icon-customer {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+    }
+
+    .icon-partner {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+    }
+
+    .icon-claim {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+    }
+
+    .card-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .card-ref {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 2px;
+      font-family: monospace;
+    }
+
+    .card-badges {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .card-meta {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .meta-item {
+      font-size: 12px;
+      color: var(--text2);
+    }
+
+    .meta-label {
+      color: var(--text3);
+      margin-right: 4px;
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 6px;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+
+    .score-pill {
+      font-size: 10px;
+      color: var(--text3);
+      background: var(--bg4);
+      padding: 2px 7px;
+      border-radius: 10px;
+    }
+
+    .status-pill {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+
+    .status-open {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+    }
+
+    .status-closed {
+      background: rgba(156, 163, 175, 0.15);
+      color: #9ca3af;
+    }
+
+    .status-cancelled {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+    }
+
+    .status-review {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+    }
+
+    .status-active {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+    }
+
+    .status-inactive {
+      background: rgba(156, 163, 175, 0.15);
+      color: #9ca3af;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 9px 18px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border2);
+      background: var(--bg3);
+      color: var(--text);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn:hover {
+      background: var(--bg4);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #4f52d9;
+    }
+
+    .btn-sm {
+      padding: 5px 12px;
+      font-size: 12px;
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    .btn-success {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #34d399;
+    }
+
+    .btn-success:hover {
+      background: rgba(16, 185, 129, 0.2);
+    }
+
+    /* NLQ area */
+    .nlq-box {
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      padding: 14px;
+      font-size: 14px;
+      color: var(--text);
+      width: 100%;
+      resize: vertical;
+      min-height: 72px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .nlq-box:focus {
+      border-color: var(--accent);
+    }
+
+    /* Entity browser */
+    .entity-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .entity-tab {
+      padding: 9px 20px;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--text2);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.15s;
+    }
+
+    .entity-tab:hover {
+      color: var(--text);
+    }
+
+    .entity-tab.active {
+      color: var(--accent2);
+      border-bottom-color: var(--accent);
+    }
+
+    .browser-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .browser-search {
+      flex: 1;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+    }
+
+    .browser-search:focus {
+      border-color: var(--accent);
+    }
+
+    /* Table */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th {
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text3);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .data-table td {
+      padding: 11px 14px;
+      font-size: 13px;
+      color: var(--text2);
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .data-table tr:hover td {
+      background: var(--bg3);
+    }
+
+    .data-table td.name-cell {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      justify-content: flex-end;
+    }
+
+    .page-info {
+      font-size: 12px;
+      color: var(--text3);
+      margin-right: auto;
+    }
+
+    /* Index management */
+    .index-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .stat-sub {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 4px;
+    }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .action-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+
+    .action-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .action-desc {
+      font-size: 12px;
+      color: var(--text3);
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    /* Logs */
+    .log-terminal {
+      background: #0a0c10;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      height: 420px;
+      overflow-y: auto;
+    }
+
+    .log-line {
+      display: flex;
+      gap: 10px;
+    }
+
+    .log-time {
+      color: #4b5563;
+      flex-shrink: 0;
+    }
+
+    .log-level {
+      flex-shrink: 0;
+      font-weight: 600;
+      width: 52px;
+    }
+
+    .log-info {
+      color: #60a5fa;
+    }
+
+    .log-warn {
+      color: #fbbf24;
+    }
+
+    .log-error {
+      color: #f87171;
+    }
+
+    .log-debug {
+      color: #6b7280;
+    }
+
+    .log-msg {
+      color: #d1d5db;
+    }
+
+    /* Generated query */
+    .code-block {
+      background: #0a0c10;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      font-family: monospace;
+      font-size: 12px;
+      color: #a5f3fc;
+      overflow-x: auto;
+      white-space: pre;
+      margin-top: 10px;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text3);
+    }
+
+    .empty-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+
+    .empty-text {
+      font-size: 14px;
+    }
+
+    /* Loading */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border2);
+      border-top-color: var(--accent2);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text3);
+      font-size: 13px;
+      padding: 20px 0;
+    }
+
+    /* Notice */
+    .notice {
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--accent2);
+      margin-bottom: 16px;
+    }
+
+    .notice-warn {
+      background: rgba(245, 158, 11, 0.08);
+      border-color: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+    }
+
+    .notice-danger {
+      background: rgba(239, 68, 68, 0.08);
+      border-color: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+    }
+
+    .notice-success {
+      background: rgba(16, 185, 129, 0.08);
+      border-color: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+    }
+
+    /* Divider */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 20px 0;
+    }
+
+    /* Generated query expandable */
+    details summary {
+      font-size: 12px;
+      color: var(--text3);
+      cursor: pointer;
+      padding: 6px 0;
+    }
+
+    details summary:hover {
+      color: var(--text2);
+    }
+
+    /* Inline flex helpers */
+    .flex {
+      display: flex;
+    }
+
+    .items-center {
+      align-items: center;
+    }
+
+    .gap-8 {
+      gap: 8px;
+    }
+
+    .mt-8 {
+      margin-top: 8px;
+    }
+
+    .mt-16 {
+      margin-top: 16px;
+    }
+
+    .mb-8 {
+      margin-bottom: 8px;
+    }
+
+    .mb-16 {
+      margin-bottom: 16px;
+    }
+
+    .ml-auto {
+      margin-left: auto;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--bg4);
+      border-radius: 3px;
+    }
+  </style>
 </head>
+
 <body>
-<div class="app">
+  <div class="app">
 
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="logo">
-      <div class="logo-mark">Hori<span>zon</span></div>
-      <div class="logo-sub">AI Search Platform</div>
-    </div>
-    <div class="nav-item active" onclick="switchTab('global')">
-      <span class="nav-icon">&#9906;</span> Global Search
-    </div>
-    <div class="nav-item" onclick="switchTab('entities')">
-      <span class="nav-icon">&#9783;</span> Entity Browser
-    </div>
-    <div class="nav-item" onclick="switchTab('index')">
-      <span class="nav-icon">&#9881;</span> Index Management
-    </div>
-    <div class="nav-item" onclick="switchTab('logs')">
-      <span class="nav-icon">&#9632;</span> Logs
-    </div>
-  </aside>
-
-  <!-- Main -->
-  <div class="main">
-
-    <!-- Tab: Global Search -->
-    <div id="tab-global" class="tab-panel active">
-      <div class="topbar">
-        <div>
-          <div class="topbar-title">Global Search</div>
-          <div class="topbar-sub">Hybrid · Natural Language</div>
-        </div>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-mark">Hori<span>zon</span></div>
+        <div class="logo-sub">AI Search Platform</div>
       </div>
-      <div class="content">
+      <div class="nav-item active" onclick="switchTab('global')">
+        <span class="nav-icon">&#9906;</span> Global Search
+      </div>
+      <div class="nav-item" onclick="switchTab('entities')">
+        <span class="nav-icon">&#9783;</span> Entity Browser
+      </div>
+      <!-- <div class="nav-item" onclick="switchTab('index')">
+        <span class="nav-icon">&#9881;</span> Index Management
+      </div> -->
+      <div class="nav-item" onclick="switchTab('logs')">
+        <span class="nav-icon">&#9632;</span> Logs
+      </div>
+    </aside>
 
-        <!-- Search input -->
-        <div class="search-wrap">
-          <div class="search-input-row">
-            <div class="search-input-wrap">
-              <span class="search-icon-wrap">&#8981;</span>
-              <input id="global-search-input" class="search-box" type="text"
-                placeholder="Search customers, partners, claims..."
-                autocomplete="off"
-                oninput="onSearchInput(this.value)"
-                onkeydown="onSearchKey(event)" />
+    <!-- Main -->
+    <div class="main">
+
+      <!-- Tab: Global Search -->
+      <div id="tab-global" class="tab-panel active">
+        <div class="topbar">
+          <div>
+            <div class="topbar-title">Global Search</div>
+            <div class="topbar-sub">Hybrid · Natural Language</div>
+          </div>
+        </div>
+        <div class="content">
+
+          <!-- Search input -->
+          <div class="search-wrap">
+            <div class="search-input-row">
+              <div class="search-input-wrap">
+                <span class="search-icon-wrap">&#8981;</span>
+                <input id="global-search-input" class="search-box" type="text"
+                  placeholder="Search customers, partners, claims..." autocomplete="off"
+                  oninput="onSearchInput(this.value)" onkeydown="onSearchKey(event)" />
+              </div>
+              <button class="btn btn-primary" onclick="runAllSearch()">Search</button>
             </div>
-            <button class="btn btn-primary" onclick="runAllSearch()">Search</button>
+          </div>
+
+          <!-- Entity filter chips -->
+          <div class="filter-chips">
+            <span class="filter-label">Filter:</span>
+            <span class="chip active" id="chip-all" onclick="toggleChip('all')">All</span>
+            <span class="chip c-customer" id="chip-customer" onclick="toggleChip('customer')">Customer</span>
+            <span class="chip c-partner" id="chip-partner" onclick="toggleChip('partner')">Partner</span>
+            <span class="chip c-claim" id="chip-claim" onclick="toggleChip('claim')">Claim</span>
+          </div>
+
+          <!-- Search mode selector -->
+          <div class="mode-tabs">
+            <span class="mode-tab" id="mtab-nlq" onclick="toggleNLQ()">&#128172; Enable Natural Language Search</span>
+          </div>
+
+          <!-- NLQ extra box (only in nlq mode) -->
+          <div id="nlq-hint" style="display:none;" class="notice mb-16">
+            Natural language mode: describe what you want in plain English, e.g. "recent high-value claims for VIP
+            customers". GPT-4o will generate the OpenSearch query.
+          </div>
+
+          <!-- Results area -->
+          <div id="global-results"></div>
+
+        </div>
+      </div>
+
+      <!-- Tab: Entity Browser -->
+      <div id="tab-entities" class="tab-panel">
+        <div class="topbar">
+          <div>
+            <div class="topbar-title">Entity Browser</div>
+            <div class="topbar-sub">Indexed Data from OpenSearch</div>
           </div>
         </div>
-
-        <!-- Entity filter chips -->
-        <div class="filter-chips">
-          <span class="filter-label">Filter:</span>
-          <span class="chip active" id="chip-all" onclick="toggleChip('all')">All</span>
-          <span class="chip c-customer" id="chip-customer" onclick="toggleChip('customer')">Customer</span>
-          <span class="chip c-partner" id="chip-partner" onclick="toggleChip('partner')">Partner</span>
-          <span class="chip c-claim" id="chip-claim" onclick="toggleChip('claim')">Claim</span>
-        </div>
-
-        <!-- Search mode selector -->
-        <div class="mode-tabs">
-          <span class="mode-tab" id="mtab-nlq" onclick="toggleNLQ()">&#128172; Enable Natural Language Search</span>
-        </div>
-
-        <!-- NLQ extra box (only in nlq mode) -->
-        <div id="nlq-hint" style="display:none;" class="notice mb-16">
-          Natural language mode: describe what you want in plain English, e.g. "recent high-value claims for VIP customers". GPT-4o will generate the OpenSearch query.
-        </div>
-
-        <!-- Results area -->
-        <div id="global-results"></div>
-
-      </div>
-    </div>
-
-    <!-- Tab: Entity Browser -->
-    <div id="tab-entities" class="tab-panel">
-      <div class="topbar">
-        <div>
-          <div class="topbar-title">Entity Browser</div>
-          <div class="topbar-sub">Live data from PostgreSQL — always fresh, fully paginated</div>
-        </div>
-      </div>
-      <div class="content">
-        <div class="entity-tabs">
-          <div class="entity-tab active" id="etab-customer" onclick="switchEntity('customer')">Customers</div>
-          <div class="entity-tab" id="etab-partner"  onclick="switchEntity('partner')">Partners</div>
-          <div class="entity-tab" id="etab-claim"    onclick="switchEntity('claim')">Claims</div>
-        </div>
-        <div class="browser-controls">
-          <input class="browser-search" type="text" id="browser-search-input"
-            placeholder="Search name, email, reference..."
-            onkeydown="if(event.key==='Enter') loadEntityBrowser(1)" />
-          <select id="browser-filter1" class="browser-search" style="max-width:140px;" onchange="loadEntityBrowser(1)">
-            <option value="">All statuses</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-          </select>
-          <select id="browser-filter2" class="browser-search" style="max-width:160px;" onchange="loadEntityBrowser(1)">
-            <option value="">All reviews</option>
-            <option value="Approved">Approved</option>
-            <option value="Pending">Pending</option>
-            <option value="Flagged">Flagged</option>
-            <option value="Passed">Passed</option>
-          </select>
-          <button class="btn btn-sm btn-primary" onclick="loadEntityBrowser(1)">Search</button>
-          <button class="btn btn-sm" onclick="clearBrowser()">Clear</button>
-        </div>
-        <div id="entity-browser-results"></div>
-        <div class="pagination" id="entity-pagination"></div>
-      </div>
-    </div>
-
-    <!-- Tab: Index Management -->
-    <div id="tab-index" class="tab-panel">
-      <div class="topbar">
-        <div>
-          <div class="topbar-title">Index Management</div>
-          <div class="topbar-sub">Sync, reset, and monitor the OpenSearch index</div>
-        </div>
-      </div>
-      <div class="content">
-        <div id="index-notice"></div>
-        <div class="index-grid" id="index-stats">
-          <div class="stat-card"><div class="stat-label">Total Documents</div><div class="stat-value" id="stat-docs">-</div><div class="stat-sub">Across all entity types</div></div>
-          <div class="stat-card"><div class="stat-label">Customers</div><div class="stat-value" id="stat-customers">-</div><div class="stat-sub">Indexed records</div></div>
-          <div class="stat-card"><div class="stat-label">Partners</div><div class="stat-value" id="stat-partners">-</div><div class="stat-sub">Indexed records</div></div>
-          <div class="stat-card"><div class="stat-label">Claims</div><div class="stat-value" id="stat-claims">-</div><div class="stat-sub">Indexed records</div></div>
-          <div class="stat-card"><div class="stat-label">API Status</div><div class="stat-value" id="stat-api" style="font-size:15px; margin-top:4px;">Checking...</div><div class="stat-sub">Backend health</div></div>
-        </div>
-        <div class="action-grid">
-          <div class="action-card">
-            <div class="action-title">&#128260; Sync Index</div>
-            <div class="action-desc">Pull latest data from PostgreSQL and sync all entities into OpenSearch. Preserves existing index structure. Runs automatically every 15 minutes.</div>
-            <button class="btn btn-success btn-sm" onclick="triggerSync()">Sync Now</button>
+        <div class="content">
+          <div class="entity-tabs">
+            <div class="entity-tab active" id="etab-customer" onclick="switchEntity('customer')">Customers</div>
+            <div class="entity-tab" id="etab-partner" onclick="switchEntity('partner')">Partners</div>
+            <div class="entity-tab" id="etab-claim" onclick="switchEntity('claim')">Claims</div>
           </div>
-          <div class="action-card">
-            <div class="action-title">&#9851; Reset Index</div>
-            <div class="action-desc">Drop and recreate the OpenSearch index, then run a full sync. All existing indexed data is deleted. Use only when index schema changes.</div>
-            <button class="btn btn-danger btn-sm" onclick="triggerReset()">Reset &amp; Rebuild</button>
+          <div class="browser-controls">
+            <input class="browser-search" type="text" id="browser-search-input"
+              placeholder="Search name, email, reference..." onkeydown="if(event.key==='Enter') loadEntityBrowser(1)" />
+            <select id="browser-filter1" class="browser-search" style="max-width:140px;"
+              onchange="loadEntityBrowser(1)">
+              <option value="">All statuses</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+            <select id="browser-filter2" class="browser-search" style="max-width:160px;"
+              onchange="loadEntityBrowser(1)">
+              <option value="">All reviews</option>
+              <option value="Approved">Approved</option>
+              <option value="Pending">Pending</option>
+              <option value="Flagged">Flagged</option>
+              <option value="Passed">Passed</option>
+            </select>
+            <button class="btn btn-sm btn-primary" onclick="loadEntityBrowser(1)">Search</button>
+            <button class="btn btn-sm" onclick="clearBrowser()">Clear</button>
+          </div>
+          <div id="entity-browser-results"></div>
+          <div class="pagination" id="entity-pagination"></div>
+        </div>
+      </div>
+
+      <!-- Tab: Index Management -->
+      <div id="tab-index" class="tab-panel">
+        <div class="topbar">
+          <div>
+            <div class="topbar-title">Index Management</div>
+            <div class="topbar-sub">Sync, reset, and monitor the OpenSearch index</div>
           </div>
         </div>
-        <div id="index-log" class="log-terminal" style="height:200px;"></div>
-      </div>
-    </div>
-
-    <!-- Tab: Logs -->
-    <div id="tab-logs" class="tab-panel">
-      <div class="topbar">
-        <div>
-          <div class="topbar-title">Logs</div>
-          <div class="topbar-sub">Search activity and backend events</div>
+        <div class="content">
+          <div id="index-notice"></div>
+          <div class="index-grid" id="index-stats">
+            <div class="stat-card">
+              <div class="stat-label">Total Documents</div>
+              <div class="stat-value" id="stat-docs">-</div>
+              <div class="stat-sub">Across all entity types</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Customers</div>
+              <div class="stat-value" id="stat-customers">-</div>
+              <div class="stat-sub">Indexed records</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Partners</div>
+              <div class="stat-value" id="stat-partners">-</div>
+              <div class="stat-sub">Indexed records</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Claims</div>
+              <div class="stat-value" id="stat-claims">-</div>
+              <div class="stat-sub">Indexed records</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">API Status</div>
+              <div class="stat-value" id="stat-api" style="font-size:15px; margin-top:4px;">Checking...</div>
+              <div class="stat-sub">Backend health</div>
+            </div>
+          </div>
+          <div class="action-grid">
+            <div class="action-card">
+              <div class="action-title">&#128260; Sync Index</div>
+              <div class="action-desc">Pull latest data from PostgreSQL and sync all entities into OpenSearch. Preserves
+                existing index structure. Runs automatically every 15 minutes.</div>
+              <button class="btn btn-success btn-sm" onclick="triggerSync()">Sync Now</button>
+            </div>
+            <div class="action-card">
+              <div class="action-title">&#9851; Reset Index</div>
+              <div class="action-desc">Drop and recreate the OpenSearch index, then run a full sync. All existing
+                indexed data is deleted. Use only when index schema changes.</div>
+              <button class="btn btn-danger btn-sm" onclick="triggerReset()">Reset &amp; Rebuild</button>
+            </div>
+          </div>
+          <div id="index-log" class="log-terminal" style="height:200px;"></div>
         </div>
-        <button class="btn btn-sm ml-auto" onclick="clearLogs()">Clear</button>
-        <button class="btn btn-sm btn-primary" onclick="toggleAutoRefresh()" id="auto-refresh-btn">&#9654; Auto-refresh</button>
       </div>
-      <div class="content">
-        <div class="notice">Logs reflect search activity in this session. Backend health is polled every 10 seconds when auto-refresh is on.</div>
-        <div class="log-terminal" id="log-terminal"></div>
-      </div>
-    </div>
 
+      <!-- Tab: Logs -->
+      <div id="tab-logs" class="tab-panel">
+        <div class="topbar">
+          <div>
+            <div class="topbar-title">Logs</div>
+            <div class="topbar-sub">Search activity and backend events</div>
+          </div>
+          <button class="btn btn-sm ml-auto" onclick="clearLogs()">Clear</button>
+          <button class="btn btn-sm btn-primary" onclick="toggleAutoRefresh()" id="auto-refresh-btn">&#9654;
+            Auto-refresh</button>
+        </div>
+        <div class="content">
+          <div class="notice">Logs reflect search activity in this session. Backend health is polled every 10 seconds
+            when auto-refresh is on.</div>
+          <div class="log-terminal" id="log-terminal"></div>
+        </div>
+      </div>
+
+    </div>
   </div>
-</div>
 
-<script>
-const API = 'https://ai.dev.horizon.ths.agency/api';
+  <script>
+    const API = 'https://ai.dev.horizon.ths.agency/api';
+    // const API = 'http://localhost:8000/api';
 
-// ── State ─────────────────────────────────────────────────────────────────
-let selectedChips = [];  // empty = all
-let searchMode = 'hybrid';
-let currentEntity = 'customer';
-let browserPage = 1;
-const PAGE_SIZE = 15;
-let searchTimeout = null;
-let autoRefreshTimer = null;
-let logLines = [];
+    // ── State ─────────────────────────────────────────────────────────────────
+    let selectedChips = [];  // empty = all
+    let searchMode = 'hybrid';
+    let currentEntity = 'customer';
+    let browserPage = 1;
+    const PAGE_SIZE = 15;
+    let searchTimeout = null;
+    let autoRefreshTimer = null;
+    let logLines = [];
 
-// ── Tab switching ─────────────────────────────────────────────────────────
-function switchTab(tab) {
-  ['global','entities','index','logs'].forEach(t => {
-    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
-  });
-  document.querySelectorAll('.nav-item').forEach((el, i) => {
-    el.classList.toggle('active', ['global','entities','index','logs'][i]===tab);
-  });
-  if (tab === 'entities') loadEntityBrowser(1);
-  if (tab === 'index') loadIndexStats();
-  if (tab === 'logs') renderLogs();
-}
+    // ── Tab switching ─────────────────────────────────────────────────────────
+    function switchTab(tab) {
+      ['global', 'entities', 'index', 'logs'].forEach(t => {
+        document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+      });
+      document.querySelectorAll('.nav-item').forEach((el, i) => {
+        el.classList.toggle('active', ['global', 'entities', 'index', 'logs'][i] === tab);
+      });
+      if (tab === 'entities') loadEntityBrowser(1);
+      if (tab === 'index') loadIndexStats();
+      if (tab === 'logs') renderLogs();
+    }
 
-// ── Entity filter chips ───────────────────────────────────────────────────
-function toggleChip(type) {
-  if (type === 'all') {
-    selectedChips = [];
-    ['all','customer','partner','claim'].forEach(c => {
-      document.getElementById('chip-'+c).classList.toggle('active', c==='all');
-    });
-  } else {
-    const idx = selectedChips.indexOf(type);
-    if (idx > -1) selectedChips.splice(idx, 1);
-    else selectedChips.push(type);
-    document.getElementById('chip-all').classList.toggle('active', selectedChips.length === 0);
-    ['customer','partner','claim'].forEach(c => {
-      document.getElementById('chip-'+c).classList.toggle('active', selectedChips.includes(c));
-    });
-  }
-}
+    // ── Entity filter chips ───────────────────────────────────────────────────
+    function toggleChip(type) {
+      if (type === 'all') {
+        selectedChips = [];
+        ['all', 'customer', 'partner', 'claim'].forEach(c => {
+          document.getElementById('chip-' + c).classList.toggle('active', c === 'all');
+        });
+      } else {
+        const idx = selectedChips.indexOf(type);
+        if (idx > -1) selectedChips.splice(idx, 1);
+        else selectedChips.push(type);
+        document.getElementById('chip-all').classList.toggle('active', selectedChips.length === 0);
+        ['customer', 'partner', 'claim'].forEach(c => {
+          document.getElementById('chip-' + c).classList.toggle('active', selectedChips.includes(c));
+        });
+      }
+    }
 
-function getEntityFilter() { return selectedChips.length ? selectedChips : null; }
+    function getEntityFilter() { return selectedChips.length ? selectedChips : null; }
 
-// ── Mode tabs ─────────────────────────────────────────────────────────────
-let isNlqMode = false;
-function toggleNLQ() {
-  isNlqMode = !isNlqMode;
-  searchMode = isNlqMode ? 'nlq' : 'hybrid';
-  document.getElementById('mtab-nlq').classList.toggle('active', isNlqMode);
-  document.getElementById('nlq-hint').style.display = isNlqMode ? 'block' : 'none';
-  const placeholder = isNlqMode
-    ? 'Describe what you want, e.g. "recent escalated claims for VIP customers"'
-    : 'Search customers, partners, claims...';
-  document.getElementById('global-search-input').placeholder = placeholder;
-  runAllSearch();
-}
+    // ── Mode tabs ─────────────────────────────────────────────────────────────
+    let isNlqMode = false;
+    function toggleNLQ() {
+      isNlqMode = !isNlqMode;
+      searchMode = isNlqMode ? 'nlq' : 'hybrid';
+      document.getElementById('mtab-nlq').classList.toggle('active', isNlqMode);
+      document.getElementById('nlq-hint').style.display = isNlqMode ? 'block' : 'none';
+      const placeholder = isNlqMode
+        ? 'Describe what you want, e.g. "recent escalated claims for VIP customers"'
+        : 'Search customers, partners, claims...';
+      document.getElementById('global-search-input').placeholder = placeholder;
+      runAllSearch();
+    }
 
-// ── Live Search ───────────────────────────────────────────────────────────
-function onSearchInput(val) {
-  clearTimeout(searchTimeout);
-  if (val.trim().length === 0) {
-    document.getElementById('global-results').innerHTML = '';
-    return;
-  }
-  searchTimeout = setTimeout(() => runAllSearch(), 300);
-}
+    // ── Live Search ───────────────────────────────────────────────────────────
+    function onSearchInput(val) {
+      clearTimeout(searchTimeout);
+      if (val.trim().length === 0) {
+        document.getElementById('global-results').innerHTML = '';
+        return;
+      }
+      searchTimeout = setTimeout(() => runAllSearch(), 300);
+    }
 
-function onSearchKey(e) {
-  if (e.key === 'Enter') {
-    clearTimeout(searchTimeout);
-    runAllSearch();
-  }
-}
+    function onSearchKey(e) {
+      if (e.key === 'Enter') {
+        clearTimeout(searchTimeout);
+        runAllSearch();
+      }
+    }
 
-// ── Search execution ──────────────────────────────────────────────────────
-async function runAllSearch() {
-  const query = document.getElementById('global-search-input').value.trim();
-  if (!query) {
-    document.getElementById('global-results').innerHTML = '';
-    return;
-  }
-  addLog('INFO', `Search [${searchMode}]: "${query}"`);
+    // ── Search execution ──────────────────────────────────────────────────────
+    async function runAllSearch() {
+      const query = document.getElementById('global-search-input').value.trim();
+      if (!query) {
+        document.getElementById('global-results').innerHTML = '';
+        return;
+      }
+      addLog('INFO', `Search [${searchMode}]: "${query}"`);
 
-  const resultsEl = document.getElementById('global-results');
-  resultsEl.innerHTML = `<div class="loading-row"><span class="spinner"></span> Running ${searchMode} search...</div>`;
+      const resultsEl = document.getElementById('global-results');
+      resultsEl.innerHTML = `<div class="loading-row"><span class="spinner"></span> Running ${searchMode} search...</div>`;
 
-  const ef = getEntityFilter();
+      const ef = getEntityFilter();
 
-  if (searchMode === 'hybrid') {
-    await runSingleMode('hybrid', query, ef, resultsEl);
-  } else if (searchMode === 'nlq') {
-    await runNLQ(query, ef, resultsEl);
-  }
-}
+      if (searchMode === 'hybrid') {
+        await runSingleMode('hybrid', query, ef, resultsEl);
+      } else if (searchMode === 'nlq') {
+        await runNLQ(query, ef, resultsEl);
+      }
+    }
 
-async function runSingleMode(mode, query, ef, container) {
-  const endpoint = '/search/hybrid';
-  const body = { query, entity_types: ef, size: 10, lexical_weight: 0.4, semantic_weight: 0.6 };
-  const [data, ms] = await timedPost(endpoint, body);
-  const results = data?.results || [];
-  const methodClass = `method-${mode}`;
-  const html = `
+    async function runSingleMode(mode, query, ef, container) {
+      const endpoint = '/search/hybrid';
+      const body = { query, entity_types: ef, size: 10, lexical_weight: 0.7, semantic_weight: 0.3 };
+      const [data, ms] = await timedPost(endpoint, body);
+      const results = data?.results || [];
+      const methodClass = `method-${mode}`;
+      const html = `
     <div class="results-section">
       <div class="section-header">
         <span class="section-title">Hybrid (BM25 + Semantic)</span>
@@ -510,17 +1292,21 @@ async function runSingleMode(mode, query, ef, container) {
       </div>
       ${renderCards(results, mode)}
     </div>`;
-  container.innerHTML = html;
-}
+      container.innerHTML = html;
+    }
 
-async function runNLQ(query, ef, container) {
-  const [data, ms] = await timedPost('/search/nlq', { query, entity_types: ef, size: 10 });
-  const results = data?.results || [];
-  const genQ = data?.generated_query;
-  const html = `
+    async function runNLQ(query, ef, container) {
+      const [data, ms] = await timedPost('/search/nlq', { query, entity_types: ef, size: 10 });
+      const results = data?.results || [];
+      const genQ = data?.generated_query;
+      const html = `
     <div class="results-section">
+      <div id="nlq-hint" class="notice mb-16">
+          NLQ Output: ${data?.summary}
+        </div>
       <div class="section-header">
         <span class="section-title">Natural Language Query</span>
+        
         <span class="method-tag method-nlq">GPT-4o → OpenSearch</span>
         <span class="section-count">${results.length} results</span>
         <span class="section-latency">&#9201; ${ms}ms</span>
@@ -528,41 +1314,41 @@ async function runNLQ(query, ef, container) {
       ${genQ ? `<details><summary>&#128270; View generated OpenSearch DSL</summary><pre class="code-block">${esc(genQ)}</pre></details>` : ''}
       <div style="margin-top:12px;">${renderCards(results, 'nlq')}</div>
     </div>`;
-  container.innerHTML = html;
-}
+      container.innerHTML = html;
+    }
 
 
 
-// ── Card rendering ────────────────────────────────────────────────────────
-function renderCards(results, method) {
-  if (!results.length) return `<div class="empty-state"><div class="empty-icon">&#128270;</div><div class="empty-text">No results found</div></div>`;
-  return results.map(r => renderCard(r, method)).join('');
-}
+    // ── Card rendering ────────────────────────────────────────────────────────
+    function renderCards(results, method) {
+      if (!results.length) return `<div class="empty-state"><div class="empty-icon">&#128270;</div><div class="empty-text">No results found</div></div>`;
+      return results.map(r => renderCard(r, method)).join('');
+    }
 
-function renderCard(r, method) {
-  const et = r.entity_type || 'unknown';
-  const initials = (r.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-  const statusClass = getStatusClass(r.status);
-  const methodClass = `method-${method}`;
-  const methodLabel = { hybrid:'Hybrid', nlq:'NLQ' }[method] || method;
+    function renderCard(r, method) {
+      const et = r.entity_type || 'unknown';
+      const initials = (r.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+      const statusClass = getStatusClass(r.status);
+      const methodClass = `method-${method}`;
+      const methodLabel = { hybrid: 'Hybrid', nlq: 'NLQ' }[method] || method;
 
-  const meta = [];
-  if (r.email)           meta.push(`<span class="meta-item"><span class="meta-label">Email</span>${esc(r.email)}</span>`);
-  if (r.plan_name)       meta.push(`<span class="meta-item"><span class="meta-label">Plan</span>${esc(r.plan_name)}</span>`);
-  if (r.quality_index != null) meta.push(`<span class="meta-item"><span class="meta-label">QI</span>${r.quality_index}</span>`);
-  if (r.escalation_count)meta.push(`<span class="meta-item"><span class="meta-label">Escalations</span>${r.escalation_count}</span>`);
-  if (r.is_active != null) meta.push(`<span class="meta-item"><span class="meta-label">Active</span>${r.is_active ? 'Yes':'No'}</span>`);
-  if (r.city)                 meta.push(`<span class="meta-item"><span class="meta-label">City</span>${esc(r.city)}</span>`);
-  if (r.province)             meta.push(`<span class="meta-item"><span class="meta-label">Province</span>${esc(r.province)}</span>`);
-  if (r.amount != null)       meta.push(`<span class="meta-item"><span class="meta-label">Amount</span>$${Number(r.amount).toFixed(2)}</span>`);
+      const meta = [];
+      if (r.email) meta.push(`<span class="meta-item"><span class="meta-label">Email</span>${esc(r.email)}</span>`);
+      if (r.plan_name) meta.push(`<span class="meta-item"><span class="meta-label">Plan</span>${esc(r.plan_name)}</span>`);
+      if (r.quality_index != null) meta.push(`<span class="meta-item"><span class="meta-label">QI</span>${r.quality_index}</span>`);
+      if (r.escalation_count) meta.push(`<span class="meta-item"><span class="meta-label">Escalations</span>${r.escalation_count}</span>`);
+      if (r.is_active != null) meta.push(`<span class="meta-item"><span class="meta-label">Active</span>${r.is_active ? 'Yes' : 'No'}</span>`);
+      if (r.city) meta.push(`<span class="meta-item"><span class="meta-label">City</span>${esc(r.city)}</span>`);
+      if (r.province) meta.push(`<span class="meta-item"><span class="meta-label">Province</span>${esc(r.province)}</span>`);
+      if (r.amount != null) meta.push(`<span class="meta-item"><span class="meta-label">Amount</span>$${Number(r.amount).toFixed(2)}</span>`);
 
-  return `
+      return `
     <div class="result-card">
       <div class="card-header">
         <div class="entity-icon icon-${et}">${initials}</div>
         <div style="flex:1; min-width:0;">
-          <div class="card-name">${esc(r.name || r.reference || '#'+r.entity_id)}</div>
-          <div class="card-ref">${esc(r.reference || '')} ${r.entity_id ? '· ID: '+r.entity_id : ''}</div>
+          <div class="card-name">${esc(r.name || r.reference || '#' + r.entity_id)}</div>
+          <div class="card-ref">${esc(r.reference || '')} ${r.entity_id ? '· ID: ' + r.entity_id : ''}</div>
         </div>
         <div class="card-badges">
           <span class="suggest-badge badge-${et}">${et}</span>
@@ -573,328 +1359,367 @@ function renderCard(r, method) {
       ${r.description ? `<div class="card-desc">${esc(r.description)}</div>` : ''}
       <div class="card-footer">
         <span class="method-tag ${methodClass}">${methodLabel}</span>
-        <span class="score-pill">score: ${(r.score||0).toFixed(4)}</span>
-        ${r.created_at ? `<span class="score-pill">${r.created_at.slice(0,10)}</span>` : ''}
+        <span class="score-pill">score: ${(r.score || 0).toFixed(4)}</span>
+        ${r.created_at ? `<span class="score-pill">${r.created_at.slice(0, 10)}</span>` : ''}
       </div>
     </div>`;
-}
+    }
 
-function getStatusClass(s) {
-  if (!s) return '';
-  const l = s.toLowerCase();
-  if (l.includes('open'))      return 'status-open';
-  if (l.includes('closed'))    return 'status-closed';
-  if (l.includes('cancel'))    return 'status-cancelled';
-  if (l.includes('review') || l.includes('progress')) return 'status-review';
-  if (l === 'active')          return 'status-active';
-  if (l === 'inactive')        return 'status-inactive';
-  return '';
-}
+    function getStatusClass(s) {
+      if (!s) return '';
+      const l = s.toLowerCase();
+      if (l.includes('open')) return 'status-open';
+      if (l.includes('closed')) return 'status-closed';
+      if (l.includes('cancel')) return 'status-cancelled';
+      if (l.includes('review') || l.includes('progress')) return 'status-review';
+      if (l === 'active') return 'status-active';
+      if (l === 'inactive') return 'status-inactive';
+      return '';
+    }
 
-// ── Entity Browser (live Postgres via /api/entities/*) ────────────────────
-function switchEntity(type) {
-  currentEntity = type;
-  ['customer','partner','claim'].forEach(e => {
-    document.getElementById('etab-'+e).classList.toggle('active', e===type);
-  });
-  // Update filter2 options per entity
-  const f2 = document.getElementById('browser-filter2');
-  if (type === 'claim') {
-    f2.innerHTML = `<option value="">All reviews</option><option>Passed</option><option>Pending</option><option>QA_Review</option>`;
-  } else if (type === 'partner') {
-    f2.innerHTML = `<option value="">All types</option><option value="provider">Provider</option><option value="supplier">Supplier</option>`;
-  } else {
-    f2.innerHTML = `<option value="">All reviews</option><option>Approved</option><option>Pending</option><option>Flagged</option>`;
-  }
-  document.getElementById('browser-search-input').value = '';
-  loadEntityBrowser(1);
-}
+    // ── Entity Browser (live Postgres via /api/entities/*) ────────────────────
+    function switchEntity(type) {
+      currentEntity = type;
+      ['customer', 'partner', 'claim'].forEach(e => {
+        document.getElementById('etab-' + e).classList.toggle('active', e === type);
+      });
+      // Update filter2 options per entity
+      const f2 = document.getElementById('browser-filter2');
+      if (type === 'claim') {
+        f2.innerHTML = `<option value="">All reviews</option><option>Passed</option><option>Pending</option><option>QA_Review</option>`;
+      } else if (type === 'partner') {
+        f2.innerHTML = `<option value="">All types</option><option value="provider">Provider</option><option value="supplier">Supplier</option>`;
+      } else {
+        f2.innerHTML = `<option value="">All reviews</option><option>Approved</option><option>Pending</option><option>Flagged</option>`;
+      }
+      document.getElementById('browser-search-input').value = '';
+      loadEntityBrowser(1);
+    }
 
-function clearBrowser() {
-  document.getElementById('browser-search-input').value = '';
-  document.getElementById('browser-filter1').value = '';
-  document.getElementById('browser-filter2').value = '';
-  loadEntityBrowser(1);
-}
+    function clearBrowser() {
+      document.getElementById('browser-search-input').value = '';
+      document.getElementById('browser-filter1').value = '';
+      document.getElementById('browser-filter2').value = '';
+      loadEntityBrowser(1);
+    }
 
-async function loadEntityBrowser(page) {
-  browserPage = page;
-  const search  = document.getElementById('browser-search-input').value.trim();
-  const filter1 = document.getElementById('browser-filter1').value;
-  const filter2 = document.getElementById('browser-filter2').value;
-  const container = document.getElementById('entity-browser-results');
-  container.innerHTML = `<div class="loading-row"><span class="spinner"></span> Loading ${currentEntity}s from PostgreSQL...</div>`;
+    async function loadEntityBrowser(page) {
+      browserPage = page;
+      const search = document.getElementById('browser-search-input').value.trim();
+      const filter1 = document.getElementById('browser-filter1').value;
+      const filter2 = document.getElementById('browser-filter2').value;
+      const container = document.getElementById('entity-browser-results');
+      container.innerHTML = `<div class="loading-row"><span class="spinner"></span> Loading ${currentEntity}s from OpenSearch</div>`;
 
-  const params = new URLSearchParams({ page, page_size: PAGE_SIZE });
-  if (search)  params.set('search', search);
-  if (filter1) params.set('status', filter1);
-  if (filter2) {
-    if (currentEntity === 'partner') params.set('type', filter2);
-    else if (filter2)               params.set('review', filter2);
-  }
+      const params = new URLSearchParams({ page, page_size: PAGE_SIZE });
+      if (search) params.set('search', search);
+      if (filter1) params.set('status', filter1);
+      if (filter2) {
+        if (currentEntity === 'partner') params.set('type', filter2);
+        else if (filter2) params.set('review', filter2);
+      }
 
-  const t0 = performance.now();
-  try {
-    const res = await fetch(`${API}/entities/${currentEntity}s?${params}`);
-    const ms = Math.round(performance.now() - t0);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    addLog('DEBUG', `GET /entities/${currentEntity}s → ${ms}ms, ${data.total} rows`);
-    renderBrowserTable(data, ms);
-  } catch(e) {
-    addLog('ERROR', `Entity browser failed: ${e.message}`);
-    container.innerHTML = `<div class="empty-state"><div class="empty-icon">&#9888;</div><div class="empty-text">Failed to load: ${esc(e.message)}</div></div>`;
-  }
-}
+      const t0 = performance.now();
+      try {
+        const res = await fetch(`${API}/entities/${currentEntity}s?${params}`);
+        const ms = Math.round(performance.now() - t0);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        addLog('DEBUG', `GET /entities/${currentEntity}s → ${ms}ms, ${data.total} rows`);
+        renderBrowserTable(data, ms);
+      } catch (e) {
+        addLog('ERROR', `Entity browser failed: ${e.message}`);
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon">&#9888;</div><div class="empty-text">Failed to load: ${esc(e.message)}</div></div>`;
+      }
+    }
 
-function renderBrowserTable(data, ms) {
-  const { total, page, page_size, results, entity_type } = data;
-  const container = document.getElementById('entity-browser-results');
-  const totalPages = Math.ceil(total / page_size);
-  const from = (page - 1) * page_size + 1;
-  const to   = Math.min(page * page_size, total);
+    function renderBrowserTable(data, ms) {
+      const { total, page, page_size, results, entity_type } = data;
+      const container = document.getElementById('entity-browser-results');
+      const totalPages = Math.ceil(total / page_size);
+      const from = (page - 1) * page_size + 1;
+      const to = Math.min(page * page_size, total);
 
-  if (!results.length) {
-    container.innerHTML = `<div class="empty-state"><div class="empty-icon">&#128270;</div><div class="empty-text">No ${entity_type}s found</div></div>`;
-    document.getElementById('entity-pagination').innerHTML = '';
-    return;
-  }
+      if (!results.length) {
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon">&#128270;</div><div class="empty-text">No ${entity_type}s found</div></div>`;
+        document.getElementById('entity-pagination').innerHTML = '';
+        return;
+      }
 
-  const cols = getEntityCols(entity_type);
-  const notice = `<div style="font-size:12px;color:var(--text3);margin-bottom:8px;">
+      const cols = getEntityCols(entity_type);
+      const notice = `<div style="font-size:12px;color:var(--text3);margin-bottom:8px;">
     Showing ${from}–${to} of <strong style="color:var(--text2)">${total}</strong> ${entity_type}s · ${ms}ms · live from PostgreSQL
   </div>`;
-  const table = `
+      const table = `
     <div style="overflow-x:auto;">
     <table class="data-table">
-      <thead><tr>${cols.map(c=>`<th>${c.label}</th>`).join('')}</tr></thead>
-      <tbody>${results.map(r=>`<tr>${cols.map(c=>`<td class="${c.cls||''}">${esc(getField(r,c.key))}</td>`).join('')}</tr>`).join('')}</tbody>
+      <thead><tr>${cols.map(c => `<th>${c.label}</th>`).join('')}</tr></thead>
+      <tbody>${results.map(r => `<tr>${cols.map(c => `<td class="${c.cls || ''}">${esc(getField(r, c.key))}</td>`).join('')}</tr>`).join('')}</tbody>
     </table></div>`;
-  container.innerHTML = notice + table;
+      container.innerHTML = notice + table;
 
-  // Full pagination controls
-  const pg = document.getElementById('entity-pagination');
-  if (totalPages <= 1) { pg.innerHTML = ''; return; }
-  let btns = `<span class="page-info">${from}–${to} of ${total}</span>`;
-  btns += `<button class="btn btn-sm" ${page<=1?'disabled':''} onclick="loadEntityBrowser(${page-1})">&#8592; Prev</button>`;
-  const start = Math.max(1, page-2), end = Math.min(totalPages, page+2);
-  for (let p = start; p <= end; p++) {
-    btns += `<button class="btn btn-sm ${p===page?'btn-primary':''}" onclick="loadEntityBrowser(${p})">${p}</button>`;
-  }
-  btns += `<button class="btn btn-sm" ${page>=totalPages?'disabled':''} onclick="loadEntityBrowser(${page+1})">Next &#8594;</button>`;
-  pg.innerHTML = btns;
-}
+      // Full pagination controls
+      const pg = document.getElementById('entity-pagination');
+      if (totalPages <= 1) { pg.innerHTML = ''; return; }
+      let btns = `<span class="page-info">${from}–${to} of ${total}</span>`;
+      btns += `<button class="btn btn-sm" ${page <= 1 ? 'disabled' : ''} onclick="loadEntityBrowser(${page - 1})">&#8592; Prev</button>`;
+      const start = Math.max(1, page - 2), end = Math.min(totalPages, page + 2);
+      for (let p = start; p <= end; p++) {
+        btns += `<button class="btn btn-sm ${p === page ? 'btn-primary' : ''}" onclick="loadEntityBrowser(${p})">${p}</button>`;
+      }
+      btns += `<button class="btn btn-sm" ${page >= totalPages ? 'disabled' : ''} onclick="loadEntityBrowser(${page + 1})">Next &#8594;</button>`;
+      pg.innerHTML = btns;
+    }
 
-function getEntityCols(et) {
-  if (et === 'customer') return [
-    {label:'ID',          key:'id'},
-    {label:'Name',        key:'name',          cls:'name-cell'},
-    {label:'Email',       key:'email'},
-    {label:'Phone',       key:'phone'},
-    {label:'Status',      key:'status'},
-    {label:'Review',      key:'review_status'},
-    {label:'Quality Index',key:'quality_index'},
-    {label:'Ext. Code',   key:'external_code'},
-    {label:'Note',        key:'note'},
-    {label:'Created',     key:'created_at'},
-  ];
-  if (et === 'partner') return [
-    {label:'ID',             key:'id'},
-    {label:'Name',           key:'name',          cls:'name-cell'},
-    {label:'Email',          key:'email'},
-    {label:'Type',           key:'type'},
-    {label:'Status',         key:'status'},
-    {label:'Review',         key:'review_status'},
-    {label:'Quality Index',  key:'quality_index'},
-    {label:'Coverage (km)',  key:'coverage_radius'},
-    {label:'Ext. Code',      key:'external_code'},
-    {label:'Created',        key:'created_at'},
-  ];
-  if (et === 'claim') return [
-    {label:'ID',          key:'id'},
-    {label:'Reference',   key:'reference',      cls:'name-cell'},
-    {label:'Description', key:'description'},
-    {label:'Status',      key:'status'},
-    {label:'Progress',    key:'progress_status'},
-    {label:'Review',      key:'review_status'},
-    {label:'Plan',        key:'plan_name'},
-    {label:'Amount',      key:'plan_amount'},
-    {label:'Customer',    key:'customer_name'},
-    {label:'City',        key:'city'},
-    {label:'Escalations', key:'escalation_count'},
-    {label:'Created',     key:'created_at'},
-  ];
-  return [];
-}
+    function getEntityCols(et) {
+      if (et === 'customer') return [
+        // { label: 'ID', key: 'id' },
+        { label: 'Name', key: 'name', cls: 'name-cell' },
+        { label: 'Email', key: 'email' },
+        // { label: 'Phone', key: 'phone' },
+        { label: 'Status', key: 'status' },
+        // { label: 'Review', key: 'review_status' },
+        // { label: 'Quality Index', key: 'quality_index' },
+        // { label: 'Ext. Code', key: 'external_code' },
+        { label: 'Note', key: 'note' },
+        { label: 'Created', key: 'created_at' },
+      ];
+      if (et === 'partner') return [
+        { label: 'Name', key: 'name', cls: 'name-cell' },
+        { label: 'Email', key: 'email' },
+        
+        { label: 'Created', key: 'created_at' },
+      ];
+      if (et === 'claim') return [
+        { label: 'Reference', key: 'reference', cls: 'name-cell' },
+        { label: 'Description', key: 'description' },
+        { label: 'Status', key: 'status' },
+        { label: 'City', key: 'city' },
+        { label: 'Created', key: 'created_at' },
+      ];
+      return [];
+    }
 
-function getField(r, key) {
-  const v = r[key];
-  if (v === null || v === undefined) return '—';
-  if (typeof v === 'boolean') return v ? 'Yes' : 'No';
-  if ((key === 'created_at' || key === 'start_time' || key === 'end_time') && v) return v.slice(0,10);
-  if (key === 'description' && v) return v.length > 55 ? v.slice(0,55)+'…' : v;
-  if (key === 'note' && v) return v.length > 40 ? v.slice(0,40)+'…' : v;
-  if (key === 'plan_amount' && v) return '$' + Number(v).toFixed(2);
-  if (key === 'quality_index' && v) return Number(v).toFixed(1);
-  return String(v);
-}
+    function getField(r, key) {
+      const v = r[key];
+      if (v === null || v === undefined) return '—';
+      if (typeof v === 'boolean') return v ? 'Yes' : 'No';
+      if ((key === 'created_at' || key === 'start_time' || key === 'end_time') && v) return v.slice(0, 10);
+      if (key === 'description' && v) return v.length > 55 ? v.slice(0, 55) + '…' : v;
+      if (key === 'note' && v) return v.length > 40 ? v.slice(0, 40) + '…' : v;
+      if (key === 'plan_amount' && v) return '$' + Number(v).toFixed(2);
+      if (key === 'quality_index' && v) return Number(v).toFixed(1);
+      return String(v);
+    }
 
-// ── Index Management ──────────────────────────────────────────────────────
-async function loadIndexStats() {
-  document.getElementById('stat-api').textContent = 'Checking...';
-  try {
-    const res = await fetch('http://localhost:8000/health');
-    const d = await res.json();
-    document.getElementById('stat-api').textContent = d.status === 'ok' ? '&#9899; Online' : '&#9888; Degraded';
-    document.getElementById('stat-api').style.color = d.status === 'ok' ? 'var(--success)' : 'var(--warn)';
-  } catch {
-    document.getElementById('stat-api').textContent = '&#10007; Offline';
-    document.getElementById('stat-api').style.color = 'var(--danger)';
-  }
-
-  // Count each entity via a broad fuzzy search
-  for (const et of ['customer','partner','claim']) {
-    try {
-      const [d] = await timedPost('/search/fuzzy', { query: 'a', entity_types: [et], size: 1 });
-      document.getElementById('stat-'+et+'s') && (document.getElementById('stat-'+et+'s').textContent = d?.total ?? '-');
-      if (et === 'customer') document.getElementById('stat-customers').textContent = d?.total ?? '-';
-      if (et === 'partner')  document.getElementById('stat-partners').textContent = d?.total ?? '-';
-      if (et === 'claim')    document.getElementById('stat-claims').textContent = d?.total ?? '-';
-    } catch {}
-  }
-
-  // Total
-  try {
-    const [d] = await timedPost('/search/fuzzy', { query: 'a', entity_types: null, size: 1 });
-    document.getElementById('stat-docs').textContent = d?.total ?? '-';
-  } catch {}
-}
-
-async function triggerSync() {
-  appendIndexLog('INFO', 'Triggering manual sync...');
-  setNotice('index', 'info', 'Syncing... this may take a moment.');
-  try {
-    const res = await fetch(`${API}/search/index/sync`, { method: 'POST' });
-    const d = await res.json();
-    appendIndexLog('INFO', 'Sync complete: ' + JSON.stringify(d.stats || {}));
-    setNotice('index', 'success', 'Sync complete! ' + JSON.stringify(d.stats || {}));
-    loadIndexStats();
-  } catch(e) {
-    appendIndexLog('ERROR', 'Sync failed: ' + e.message);
-    setNotice('index', 'danger', 'Sync failed: ' + e.message);
-  }
-}
-
-async function triggerReset() {
-  if (!confirm('This will drop and recreate the entire index. All indexed data will be deleted. Continue?')) return;
-  appendIndexLog('WARN', 'Resetting index...');
-  setNotice('index', 'warn', 'Resetting index and rebuilding — this may take several minutes.');
-  try {
-    const res = await fetch(`${API}/search/index/reset`, { method: 'POST' });
-    const d = await res.json();
-    appendIndexLog('INFO', 'Reset complete: ' + JSON.stringify(d.stats || {}));
-    setNotice('index', 'success', 'Index reset and synced. ' + JSON.stringify(d.stats || {}));
-    loadIndexStats();
-  } catch(e) {
-    appendIndexLog('ERROR', 'Reset failed: ' + e.message);
-    setNotice('index', 'danger', 'Reset failed: ' + e.message);
-  }
-}
-
-function appendIndexLog(level, msg) {
-  const el = document.getElementById('index-log');
-  const time = new Date().toLocaleTimeString();
-  const cls = level === 'ERROR' ? 'log-error' : level === 'WARN' ? 'log-warn' : 'log-info';
-  el.innerHTML += `<div class="log-line"><span class="log-time">${time}</span><span class="log-level ${cls}">${level}</span><span class="log-msg">${esc(msg)}</span></div>`;
-  el.scrollTop = el.scrollHeight;
-}
-
-function setNotice(tab, type, msg) {
-  const el = document.getElementById(tab+'-notice');
-  if (!el) return;
-  const cls = type === 'danger' ? 'notice-danger' : type === 'warn' ? 'notice-warn' : type === 'success' ? 'notice-success' : '';
-  el.innerHTML = `<div class="notice ${cls}" style="margin-bottom:16px;">${esc(msg)}</div>`;
-}
-
-// ── Logs ──────────────────────────────────────────────────────────────────
-function addLog(level, msg) {
-  const time = new Date().toLocaleTimeString();
-  logLines.push({ time, level, msg });
-  if (logLines.length > 200) logLines.shift();
-  if (document.getElementById('tab-logs').classList.contains('active')) renderLogs();
-}
-
-function renderLogs() {
-  const el = document.getElementById('log-terminal');
-  if (!logLines.length) {
-    el.innerHTML = `<div class="log-line"><span class="log-msg" style="color:var(--text3);">No logs yet. Run a search to see activity.</span></div>`;
-    return;
-  }
-  el.innerHTML = logLines.map(l => {
-    const cls = l.level === 'ERROR' ? 'log-error' : l.level === 'WARN' ? 'log-warn' : l.level === 'DEBUG' ? 'log-debug' : 'log-info';
-    return `<div class="log-line"><span class="log-time">${l.time}</span><span class="log-level ${cls}">${l.level}</span><span class="log-msg">${esc(l.msg)}</span></div>`;
-  }).join('');
-  el.scrollTop = el.scrollHeight;
-}
-
-function clearLogs() { logLines = []; renderLogs(); }
-
-function toggleAutoRefresh() {
-  const btn = document.getElementById('auto-refresh-btn');
-  if (autoRefreshTimer) {
-    clearInterval(autoRefreshTimer);
-    autoRefreshTimer = null;
-    btn.textContent = '▶ Auto-refresh';
-    btn.classList.remove('btn-primary');
-  } else {
-    autoRefreshTimer = setInterval(async () => {
+    // ── Index Management ──────────────────────────────────────────────────────
+    async function loadIndexStats() {
+      document.getElementById('stat-api').textContent = 'Checking...';
       try {
         const res = await fetch('http://localhost:8000/health');
         const d = await res.json();
-        addLog('DEBUG', `Health poll: ${JSON.stringify(d)}`);
-      } catch(e) {
-        addLog('WARN', 'Health poll failed: ' + e.message);
+        document.getElementById('stat-api').textContent = d.status === 'ok' ? '&#9899; Online' : '&#9888; Degraded';
+        document.getElementById('stat-api').style.color = d.status === 'ok' ? 'var(--success)' : 'var(--warn)';
+      } catch {
+        document.getElementById('stat-api').textContent = '&#10007; Offline';
+        document.getElementById('stat-api').style.color = 'var(--danger)';
       }
-    }, 10000);
-    btn.textContent = '⏹ Stop refresh';
-    btn.classList.add('btn-primary');
-    addLog('INFO', 'Auto-refresh started (10s interval)');
-  }
-}
 
-// ── HTTP helpers ──────────────────────────────────────────────────────────
-async function timedPost(endpoint, body) {
-  const t0 = performance.now();
-  try {
-    const res = await fetch(API + endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    const ms = Math.round(performance.now() - t0);
-    if (!res.ok) {
-      const txt = await res.text();
-      addLog('ERROR', `${endpoint} → ${res.status}: ${txt.slice(0,80)}`);
-      return [{ results: [], total: 0, error: txt }, ms];
+      // Count each entity via a broad fuzzy search
+      for (const et of ['customer', 'partner', 'claim']) {
+        try {
+          const [d] = await timedPost('/search/fuzzy', { query: 'a', entity_types: [et], size: 1 });
+          document.getElementById('stat-' + et + 's') && (document.getElementById('stat-' + et + 's').textContent = d?.total ?? '-');
+          if (et === 'customer') document.getElementById('stat-customers').textContent = d?.total ?? '-';
+          if (et === 'partner') document.getElementById('stat-partners').textContent = d?.total ?? '-';
+          if (et === 'claim') document.getElementById('stat-claims').textContent = d?.total ?? '-';
+        } catch { }
+      }
+
+      // Total
+      try {
+        const [d] = await timedPost('/search/fuzzy', { query: 'a', entity_types: null, size: 1 });
+        document.getElementById('stat-docs').textContent = d?.total ?? '-';
+      } catch { }
     }
-    const data = await res.json();
-    addLog('DEBUG', `${endpoint} → ${ms}ms, ${data.total||0} results`);
-    return [data, ms];
-  } catch(e) {
-    const ms = Math.round(performance.now() - t0);
-    addLog('ERROR', `${endpoint} failed: ${e.message}`);
-    return [{ results: [], total: 0, error: e.message }, ms];
-  }
-}
 
-function esc(s) {
-  if (s === null || s === undefined) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+    async function triggerSync() {
+      appendIndexLog('INFO', 'Triggering manual sync...');
+      setNotice('index', 'info', 'Syncing... this may take a moment.');
+      try {
+        const res = await fetch(`${API}/search/index/sync`, { method: 'POST' });
+        const d = await res.json();
+        appendIndexLog('INFO', 'Sync complete: ' + JSON.stringify(d.stats || {}));
+        setNotice('index', 'success', 'Sync complete! ' + JSON.stringify(d.stats || {}));
+        loadIndexStats();
+      } catch (e) {
+        appendIndexLog('ERROR', 'Sync failed: ' + e.message);
+        setNotice('index', 'danger', 'Sync failed: ' + e.message);
+      }
+    }
 
-// ── Init ──────────────────────────────────────────────────────────────────
-addLog('INFO', 'Horizon Search UI initialized');
-addLog('INFO', `Backend: ${API}`);
-</script>
+    async function triggerReset() {
+      if (!confirm('This will drop and recreate the entire index. All indexed data will be deleted. Continue?')) return;
+      appendIndexLog('WARN', 'Resetting index...');
+      setNotice('index', 'warn', 'Resetting index and rebuilding — this may take several minutes.');
+      try {
+        const res = await fetch(`${API}/search/index/reset`, { method: 'POST' });
+        const d = await res.json();
+        appendIndexLog('INFO', 'Reset complete: ' + JSON.stringify(d.stats || {}));
+        setNotice('index', 'success', 'Index reset and synced. ' + JSON.stringify(d.stats || {}));
+        loadIndexStats();
+      } catch (e) {
+        appendIndexLog('ERROR', 'Reset failed: ' + e.message);
+        setNotice('index', 'danger', 'Reset failed: ' + e.message);
+      }
+    }
+
+    function appendIndexLog(level, msg) {
+      const el = document.getElementById('index-log');
+      const time = new Date().toLocaleTimeString();
+      const cls = level === 'ERROR' ? 'log-error' : level === 'WARN' ? 'log-warn' : 'log-info';
+      el.innerHTML += `<div class="log-line"><span class="log-time">${time}</span><span class="log-level ${cls}">${level}</span><span class="log-msg">${esc(msg)}</span></div>`;
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function setNotice(tab, type, msg) {
+      const el = document.getElementById(tab + '-notice');
+      if (!el) return;
+      const cls = type === 'danger' ? 'notice-danger' : type === 'warn' ? 'notice-warn' : type === 'success' ? 'notice-success' : '';
+      el.innerHTML = `<div class="notice ${cls}" style="margin-bottom:16px;">${esc(msg)}</div>`;
+    }
+
+    // ── Logs ──────────────────────────────────────────────────────────────────
+    function addLog(level, msg) {
+      const time = new Date().toLocaleTimeString();
+      logLines.push({ time, level, msg });
+      if (logLines.length > 200) logLines.shift();
+      if (document.getElementById('tab-logs').classList.contains('active')) renderLogs();
+    }
+
+    function renderLogs() {
+      const el = document.getElementById('log-terminal');
+      if (!logLines.length) {
+        el.innerHTML = `<div class="log-line"><span class="log-msg" style="color:var(--text3);">No logs yet. Run a search to see activity.</span></div>`;
+        return;
+      }
+      el.innerHTML = logLines.map(l => {
+        const cls = l.level === 'ERROR' ? 'log-error' : l.level === 'WARN' ? 'log-warn' : l.level === 'DEBUG' ? 'log-debug' : 'log-info';
+        return `<div class="log-line"><span class="log-time">${l.time}</span><span class="log-level ${cls}">${l.level}</span><span class="log-msg">${esc(l.msg)}</span></div>`;
+      }).join('');
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function clearLogs() { logLines = []; renderLogs(); }
+
+    function toggleAutoRefresh() {
+      const btn = document.getElementById('auto-refresh-btn');
+      if (autoRefreshTimer) {
+        clearInterval(autoRefreshTimer);
+        autoRefreshTimer = null;
+        btn.textContent = '▶ Auto-refresh';
+        btn.classList.remove('btn-primary');
+      } else {
+        autoRefreshTimer = setInterval(async () => {
+          try {
+            const res = await fetch('http://localhost:8000/health');
+            const d = await res.json();
+            addLog('DEBUG', `Health poll: ${JSON.stringify(d)}`);
+          } catch (e) {
+            addLog('WARN', 'Health poll failed: ' + e.message);
+          }
+        }, 10000);
+        btn.textContent = '⏹ Stop refresh';
+        btn.classList.add('btn-primary');
+        addLog('INFO', 'Auto-refresh started (10s interval)');
+      }
+    }
+
+    // ── HTTP helpers ──────────────────────────────────────────────────────────
+    // async function timedPost(endpoint, body) {
+    //   const t0 = performance.now();
+    //   try {
+    //     const res = await fetch(API + endpoint, {
+    //       method: 'POST',
+    //       headers: { 'Content-Type': 'application/json' },
+    //       body: JSON.stringify(body),
+    //     });
+    //     const ms = Math.round(performance.now() - t0);
+    //     if (!res.ok) {
+    //       const txt = await res.text();
+    //       addLog('ERROR', `${endpoint} → ${res.status}: ${txt.slice(0,80)}`);
+    //       return [{ results: [], total: 0, error: txt }, ms];
+    //     }
+    //     const data = await res.json();
+    //     addLog('DEBUG', `${endpoint} → ${ms}ms, ${data.total||0} results`);
+    //     return [data, ms];
+    //   } catch(e) {
+    //     const ms = Math.round(performance.now() - t0);
+    //     addLog('ERROR', `${endpoint} failed: ${e.message}`);
+    //     return [{ results: [], total: 0, error: e.message }, ms];
+    //   }
+    // }
+    let currentRequestId = 0;
+    let currentController = null;
+
+    async function timedPost(endpoint, body) {
+      if (currentController) currentController.abort();
+
+      currentController = new AbortController();
+
+      // ✅ increment request id
+      currentRequestId++;
+      const requestId = currentRequestId;
+
+      const t0 = performance.now();
+
+      try {
+        const res = await fetch(API + endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...body,
+            request_id: requestId,   // ✅ send to backend
+          }),
+          signal: currentController.signal,
+        });
+
+        const ms = Math.round(performance.now() - t0);
+
+        if (!res.ok) {
+          const txt = await res.text();
+          return [{ results: [], total: 0, error: txt }, ms];
+        }
+
+        const data = await res.json();
+
+        // ✅ ignore stale responses (VERY IMPORTANT)
+        if (requestId !== currentRequestId) {
+          return [{ results: [], total: 0, stale: true }, ms];
+        }
+
+        return [data, ms];
+
+      } catch (e) {
+        const ms = Math.round(performance.now() - t0);
+
+        if (e.name === 'AbortError') {
+          return [{ results: [], total: 0 }, ms];
+        }
+
+        return [{ results: [], total: 0, error: e.message }, ms];
+      }
+    }
+
+    function esc(s) {
+      if (s === null || s === undefined) return '';
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    addLog('INFO', 'Horizon Search UI initialized');
+    addLog('INFO', `Backend: ${API}`);
+  </script>
 </body>
+
 </html>
