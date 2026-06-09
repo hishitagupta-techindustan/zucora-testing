@@ -1,2228 +1,1149 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Horizon Global Search</title>
-  <style>
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    :root {
-      --bg: #0f1117;
-      --bg2: #161820;
-      --bg3: #1e2030;
-      --bg4: #252838;
-      --border: rgba(255, 255, 255, 0.08);
-      --border2: rgba(255, 255, 255, 0.14);
-      --text: #e2e4ef;
-      --text2: #9093a8;
-      --text3: #5c5f73;
-      --accent: #6366f1;
-      --accent2: #818cf8;
-      --success: #10b981;
-      --warn: #f59e0b;
-      --danger: #ef4444;
-      --info: #3b82f6;
-      --radius: 10px;
-      --radius-sm: 6px;
-      --radius-lg: 14px;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 14px;
-      line-height: 1.5;
-      min-height: 100vh;
-    }
-
-    /* Layout */
-    .app {
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    .sidebar {
-      width: 220px;
-      flex-shrink: 0;
-      background: var(--bg2);
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      padding: 20px 0;
-    }
-
-    .main {
-      flex: 1;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Sidebar */
-    .logo {
-      padding: 0 20px 24px;
-    }
-
-    .logo-mark {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: -0.5px;
-    }
-
-    .logo-mark span {
-      color: var(--accent2);
-    }
-
-    .logo-sub {
-      font-size: 11px;
-      color: var(--text3);
-      margin-top: 2px;
-    }
-
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 9px 20px;
-      cursor: pointer;
-      font-size: 13px;
-      color: var(--text2);
-      border-left: 2px solid transparent;
-      transition: all 0.15s;
-    }
-
-    .nav-item:hover {
-      color: var(--text);
-      background: var(--bg3);
-    }
-
-    .nav-item.active {
-      color: var(--accent2);
-      border-left-color: var(--accent);
-      background: rgba(99, 102, 241, 0.08);
-    }
-
-    .nav-icon {
-      width: 16px;
-      text-align: center;
-      font-size: 15px;
-    }
-
-    /* Top bar */
-    .topbar {
-      padding: 16px 28px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .topbar-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .topbar-sub {
-      font-size: 12px;
-      color: var(--text3);
-      margin-top: 1px;
-    }
-
-    /* Content areas */
-    .content {
-      padding: 24px 28px;
-      flex: 1;
-    }
-
-    .tab-panel {
-      display: none;
-    }
-
-    .tab-panel.active {
-      display: block;
-    }
-
-    /* Search box area */
-    .search-wrap {
-      position: relative;
-      margin-bottom: 20px;
-    }
-
-    .search-input-row {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .search-box {
-      flex: 1;
-      background: var(--bg3);
-      border: 1px solid var(--border2);
-      border-radius: var(--radius);
-      padding: 12px 16px 12px 42px;
-      font-size: 15px;
-      color: var(--text);
-      outline: none;
-      transition: border 0.15s;
-    }
-
-    .search-box:focus {
-      border-color: var(--accent);
-    }
-
-    .search-box::placeholder {
-      color: var(--text3);
-    }
-
-    .search-icon-wrap {
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text3);
-      font-size: 16px;
-      pointer-events: none;
-    }
-
-    .search-input-wrap {
-      position: relative;
-      flex: 1;
-    }
-
-    /* Entity filter chips */
-    .filter-chips {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .filter-label {
-      font-size: 12px;
-      color: var(--text3);
-    }
-
-    .chip {
-      padding: 4px 12px;
-      border-radius: 20px;
-      border: 1px solid var(--border2);
-      font-size: 12px;
-      cursor: pointer;
-      color: var(--text2);
-      background: var(--bg3);
-      transition: all 0.15s;
-    }
-
-    .chip:hover {
-      border-color: var(--accent);
-      color: var(--accent2);
-    }
-
-    .chip.active {
-      background: rgba(99, 102, 241, 0.15);
-      border-color: var(--accent);
-      color: var(--accent2);
-    }
-
-    .chip.c-customer.active {
-      background: rgba(59, 130, 246, 0.15);
-      border-color: var(--info);
-      color: #60a5fa;
-    }
-
-    .chip.c-partner.active {
-      background: rgba(16, 185, 129, 0.15);
-      border-color: var(--success);
-      color: #34d399;
-    }
-
-    .chip.c-claim.active {
-      background: rgba(245, 158, 11, 0.15);
-      border-color: var(--warn);
-      color: #fbbf24;
-    }
-
-    /* Suggestions dropdown */
-    .suggest-dropdown {
-      position: absolute;
-      top: calc(100% + 6px);
-      left: 0;
-      right: 0;
-      background: var(--bg3);
-      border: 1px solid var(--border2);
-      border-radius: var(--radius);
-      z-index: 100;
-      overflow: hidden;
-    }
-
-    .suggest-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 9px 14px;
-      cursor: pointer;
-      transition: background 0.1s;
-    }
-
-    .suggest-item:hover {
-      background: var(--bg4);
-    }
-
-    .suggest-badge {
-      font-size: 10px;
-      font-weight: 600;
-      padding: 2px 7px;
-      border-radius: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-      flex-shrink: 0;
-    }
-
-    .badge-customer {
-      background: rgba(59, 130, 246, 0.2);
-      color: #60a5fa;
-    }
-
-    .badge-partner {
-      background: rgba(16, 185, 129, 0.2);
-      color: #34d399;
-    }
-
-    .badge-claim {
-      background: rgba(245, 158, 11, 0.2);
-      color: #fbbf24;
-    }
-
-    .badge-unknown {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--text2);
-    }
-
-    .suggest-name {
-      font-size: 13px;
-      color: var(--text);
-      flex: 1;
-    }
-
-    .suggest-sub {
-      font-size: 11px;
-      color: var(--text3);
-    }
-
-    /* Search mode tabs */
-    .mode-tabs {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-
-    .mode-tab {
-      padding: 6px 14px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border2);
-      font-size: 12px;
-      cursor: pointer;
-      color: var(--text2);
-      background: var(--bg3);
-      transition: all 0.15s;
-    }
-
-    .mode-tab:hover {
-      color: var(--text);
-    }
-
-    .mode-tab.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
-
-    /* Results section */
-    .results-section {
-      margin-bottom: 28px;
-    }
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .section-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text2);
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-    }
-
-    .section-count {
-      font-size: 12px;
-      color: var(--text3);
-    }
-
-    .section-latency {
-      font-size: 11px;
-      color: var(--success);
-      margin-left: auto;
-    }
-
-    .method-tag {
-      font-size: 10px;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-    }
-
-    .method-hybrid {
-      background: rgba(245, 158, 11, 0.2);
-      color: #fbbf24;
-    }
-
-    .method-nlq {
-      background: rgba(239, 68, 68, 0.2);
-      color: #f87171;
-    }
-
-    /* Result cards */
-    .result-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px 16px;
-      margin-bottom: 8px;
-      transition: border 0.15s;
-    }
-
-    .result-card:hover {
-      border-color: var(--border2);
-    }
-
-    .card-header {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-
-    .entity-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      font-weight: 700;
-      flex-shrink: 0;
-    }
-
-    .icon-customer {
-      background: rgba(59, 130, 246, 0.15);
-      color: #60a5fa;
-    }
-
-    .icon-partner {
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
-    }
-
-    .icon-claim {
-      background: rgba(245, 158, 11, 0.15);
-      color: #fbbf24;
-    }
-
-    .card-name {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text);
-      line-height: 1.3;
-    }
-
-    .card-ref {
-      font-size: 11px;
-      color: var(--text3);
-      margin-top: 2px;
-      font-family: monospace;
-    }
-
-    .card-badges {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-left: auto;
-      flex-shrink: 0;
-    }
-
-    .card-meta {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .meta-item {
-      font-size: 12px;
-      color: var(--text2);
-    }
-
-    .meta-label {
-      color: var(--text3);
-      margin-right: 4px;
-    }
-
-    .card-desc {
-      font-size: 12px;
-      color: var(--text3);
-      margin-top: 6px;
-      line-height: 1.4;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .card-footer {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 10px;
-      padding-top: 8px;
-      border-top: 1px solid var(--border);
-    }
-
-    .score-pill {
-      font-size: 10px;
-      color: var(--text3);
-      background: var(--bg4);
-      padding: 2px 7px;
-      border-radius: 10px;
-    }
-
-    .status-pill {
-      font-size: 10px;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-weight: 500;
-    }
-
-    .status-open {
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
-    }
-
-    .status-closed {
-      background: rgba(156, 163, 175, 0.15);
-      color: #9ca3af;
-    }
-
-    .status-cancelled {
-      background: rgba(239, 68, 68, 0.15);
-      color: #f87171;
-    }
-
-    .status-review {
-      background: rgba(245, 158, 11, 0.15);
-      color: #fbbf24;
-    }
-
-    .status-active {
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
-    }
-
-    .status-inactive {
-      background: rgba(156, 163, 175, 0.15);
-      color: #9ca3af;
-    }
-
-    /* Buttons */
-    .btn {
-      padding: 9px 18px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border2);
-      background: var(--bg3);
-      color: var(--text);
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .btn:hover {
-      background: var(--bg4);
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
-
-    .btn-primary:hover {
-      background: #4f52d9;
-    }
-
-    .btn-sm {
-      padding: 5px 12px;
-      font-size: 12px;
-    }
-
-    .btn-danger {
-      background: rgba(239, 68, 68, 0.1);
-      border-color: rgba(239, 68, 68, 0.3);
-      color: #f87171;
-    }
-
-    .btn-danger:hover {
-      background: rgba(239, 68, 68, 0.2);
-    }
-
-    .btn-success {
-      background: rgba(16, 185, 129, 0.1);
-      border-color: rgba(16, 185, 129, 0.3);
-      color: #34d399;
-    }
-
-    .btn-success:hover {
-      background: rgba(16, 185, 129, 0.2);
-    }
-
-    /* NLQ area */
-    .nlq-box {
-      background: var(--bg3);
-      border: 1px solid var(--border2);
-      border-radius: var(--radius);
-      padding: 14px;
-      font-size: 14px;
-      color: var(--text);
-      width: 100%;
-      resize: vertical;
-      min-height: 72px;
-      outline: none;
-      font-family: inherit;
-    }
-
-    .nlq-box:focus {
-      border-color: var(--accent);
-    }
-
-    /* Entity browser */
-    .entity-tabs {
-      display: flex;
-      gap: 0;
-      margin-bottom: 20px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .entity-tab {
-      padding: 9px 20px;
-      font-size: 13px;
-      cursor: pointer;
-      color: var(--text2);
-      border-bottom: 2px solid transparent;
-      margin-bottom: -1px;
-      transition: all 0.15s;
-    }
-
-    .entity-tab:hover {
-      color: var(--text);
-    }
-
-    .entity-tab.active {
-      color: var(--accent2);
-      border-bottom-color: var(--accent);
-    }
-
-    .browser-controls {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-
-    .browser-search {
-      flex: 1;
-      background: var(--bg3);
-      border: 1px solid var(--border2);
-      border-radius: var(--radius-sm);
-      padding: 8px 12px;
-      font-size: 13px;
-      color: var(--text);
-      outline: none;
-    }
-
-    .browser-search:focus {
-      border-color: var(--accent);
-    }
-
-    /* Table */
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .data-table th {
-      text-align: left;
-      padding: 10px 14px;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--text3);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .data-table td {
-      padding: 11px 14px;
-      font-size: 13px;
-      color: var(--text2);
-      border-bottom: 1px solid var(--border);
-      vertical-align: middle;
-    }
-
-    .data-table tr:hover td {
-      background: var(--bg3);
-    }
-
-    .data-table td.name-cell {
-      color: var(--text);
-      font-weight: 500;
-    }
-
-    /* Pagination */
-    .pagination {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 16px;
-      justify-content: flex-end;
-    }
-
-    .page-info {
-      font-size: 12px;
-      color: var(--text3);
-      margin-right: auto;
-    }
-
-    /* Index management */
-    .index-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 14px;
-      margin-bottom: 24px;
-    }
-
-    .stat-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-    }
-
-    .stat-label {
-      font-size: 11px;
-      color: var(--text3);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 6px;
-    }
-
-    .stat-value {
-      font-size: 24px;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .stat-sub {
-      font-size: 11px;
-      color: var(--text3);
-      margin-top: 4px;
-    }
-
-    .action-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 14px;
-      margin-bottom: 24px;
-    }
-
-    .action-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px;
-    }
-
-    .action-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 6px;
-    }
-
-    .action-desc {
-      font-size: 12px;
-      color: var(--text3);
-      margin-bottom: 14px;
-      line-height: 1.5;
-    }
-
-    /* Logs */
-    .log-terminal {
-      background: #0a0c10;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      font-family: 'JetBrains Mono', 'Fira Code', monospace;
-      font-size: 12px;
-      line-height: 1.7;
-      height: 420px;
-      overflow-y: auto;
-    }
-
-    .log-line {
-      display: flex;
-      gap: 10px;
-    }
-
-    .log-time {
-      color: #4b5563;
-      flex-shrink: 0;
-    }
-
-    .log-level {
-      flex-shrink: 0;
-      font-weight: 600;
-      width: 52px;
-    }
-
-    .log-info {
-      color: #60a5fa;
-    }
-
-    .log-warn {
-      color: #fbbf24;
-    }
-
-    .log-error {
-      color: #f87171;
-    }
-
-    .log-debug {
-      color: #6b7280;
-    }
-
-    .log-msg {
-      color: #d1d5db;
-    }
-
-    /* Generated query */
-    .code-block {
-      background: #0a0c10;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 14px;
-      font-family: monospace;
-      font-size: 12px;
-      color: #a5f3fc;
-      overflow-x: auto;
-      white-space: pre;
-      margin-top: 10px;
-    }
-
-    /* Empty state */
-    .empty-state {
-      text-align: center;
-      padding: 48px 20px;
-      color: var(--text3);
-    }
-
-    .empty-icon {
-      font-size: 32px;
-      margin-bottom: 12px;
-    }
-
-    .empty-text {
-      font-size: 14px;
-    }
-
-    /* Loading */
-    .spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid var(--border2);
-      border-top-color: var(--accent2);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      vertical-align: middle;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    .loading-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--text3);
-      font-size: 13px;
-      padding: 20px 0;
-    }
-
-    /* Notice */
-    .notice {
-      background: rgba(99, 102, 241, 0.08);
-      border: 1px solid rgba(99, 102, 241, 0.2);
-      border-radius: var(--radius-sm);
-      padding: 10px 14px;
-      font-size: 12px;
-      color: var(--accent2);
-      margin-bottom: 16px;
-    }
-
-    .notice-warn {
-      background: rgba(245, 158, 11, 0.08);
-      border-color: rgba(245, 158, 11, 0.2);
-      color: #fbbf24;
-    }
-
-    .notice-danger {
-      background: rgba(239, 68, 68, 0.08);
-      border-color: rgba(239, 68, 68, 0.2);
-      color: #f87171;
-    }
-
-    .notice-success {
-      background: rgba(16, 185, 129, 0.08);
-      border-color: rgba(16, 185, 129, 0.2);
-      color: #34d399;
-    }
-
-    /* Divider */
-    .divider {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 20px 0;
-    }
-
-    /* Generated query expandable */
-    details summary {
-      font-size: 12px;
-      color: var(--text3);
-      cursor: pointer;
-      padding: 6px 0;
-    }
-
-    details summary:hover {
-      color: var(--text2);
-    }
-
-    /* Inline flex helpers */
-    .flex {
-      display: flex;
-    }
-
-    .items-center {
-      align-items: center;
-    }
-
-    .gap-8 {
-      gap: 8px;
-    }
-
-    .mt-8 {
-      margin-top: 8px;
-    }
-
-    .mt-16 {
-      margin-top: 16px;
-    }
-
-    .mb-8 {
-      margin-bottom: 8px;
-    }
-
-    .mb-16 {
-      margin-bottom: 16px;
-    }
-
-    .ml-auto {
-      margin-left: auto;
-    }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: var(--bg4);
-      border-radius: 3px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Horizon v2 — Global Search</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f6fa;
+  --bg1:#ffffff;
+  --bg2:#f8f9fc;
+  --bg3:#eef0f6;
+  --bg4:#e2e6f0;
+  --border:rgba(0,0,0,0.07);
+  --border2:rgba(0,0,0,0.12);
+  --border3:rgba(0,0,0,0.2);
+  --text:#1a1f2e;
+  --text2:#4a5270;
+  --text3:#8890aa;
+  --text4:#b4bbce;
+  --accent:#4f46e5;
+  --accent-soft:rgba(79,70,229,0.10);
+  --cust:#1d7fe8;
+  --cust-bg:rgba(29,127,232,0.08);
+  --cust-border:rgba(29,127,232,0.25);
+  --part:#0e9e76;
+  --part-bg:rgba(14,158,118,0.08);
+  --part-border:rgba(14,158,118,0.25);
+  --clm:#c27a10;
+  --clm-bg:rgba(194,122,16,0.08);
+  --clm-border:rgba(194,122,16,0.25);
+  --danger:#d63c3c;
+  --warn:#c27a10;
+  --ok:#0e9e76;
+  --radius:8px;
+  --radius-lg:12px;
+  --radius-xl:16px;
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'DM Sans',sans-serif;
+  --display:'Syne',sans-serif;
+  --sidebar:224px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shimmer-from:rgba(255,255,255,0);
+  --shimmer-mid:rgba(255,255,255,0.7);
+  --shimmer-bg:var(--bg3);
+}
+
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.55;overflow:hidden}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--text4)}
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar);flex-shrink:0;background:var(--bg1);border-right:1px solid var(--border);display:flex;flex-direction:column;box-shadow:var(--shadow-sm);z-index:10}
+.sb-logo{padding:22px 20px 18px;border-bottom:1px solid var(--border)}
+.sb-logomark{font-family:var(--display);font-size:19px;font-weight:700;letter-spacing:-0.5px;color:var(--text)}
+.sb-logomark em{color:var(--accent);font-style:normal}
+.sb-ver{font-size:10px;color:var(--text4);font-family:var(--mono);margin-top:3px;letter-spacing:.5px}
+.sb-nav{padding:14px 0;flex:1;overflow-y:auto}
+.sb-sec{font-size:9px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--text4);padding:0 20px 8px;margin-top:14px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 20px;font-size:13px;color:var(--text2);cursor:pointer;border-left:2px solid transparent;transition:all .13s;border-radius:0;position:relative}
+.sb-item svg{width:15px;height:15px;flex-shrink:0;opacity:.55}
+.sb-item:hover{color:var(--text);background:var(--bg2)}
+.sb-item.active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-soft)}
+.sb-item.active svg{opacity:1;color:var(--accent)}
+.sb-bottom{padding:16px 20px;border-top:1px solid var(--border)}
+.sb-status{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3)}
+.sb-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);flex-shrink:0;box-shadow:0 0 0 2px rgba(14,158,118,0.2)}
+.sb-dot.warn{background:var(--warn);box-shadow:0 0 0 2px rgba(194,122,16,0.2)}
+.sb-dot.off{background:var(--danger);box-shadow:0 0 0 2px rgba(214,60,60,0.2)}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{padding:14px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-shrink:0;background:var(--bg1);box-shadow:var(--shadow-sm);z-index:5}
+.tb-title{font-family:var(--display);font-size:15px;font-weight:700;color:var(--text)}
+.tb-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+
+/* ── SCROLL FIX ── */
+.content{flex:1;overflow-y:auto;overflow-x:hidden;padding:22px 28px;-webkit-overflow-scrolling:touch}
+.tab-panel{display:none;height:100%;overflow:hidden;flex-direction:column}
+.tab-panel.active{display:flex}
+.tab-panel.active > .content{flex:1;overflow-y:auto}
+.tab-panel.active > .topbar{flex-shrink:0}
+
+/* ── SEARCH BAR ── */
+.search-row{display:flex;gap:10px;align-items:stretch;margin-bottom:16px}
+.search-wrap{flex:1;position:relative}
+.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
+.search-icon svg{width:16px;height:16px}
+.search-input{width:100%;background:var(--bg1);border:1.5px solid var(--border2);border-radius:var(--radius);padding:11px 14px 11px 40px;font-size:14px;color:var(--text);outline:none;font-family:var(--sans);transition:border .15s,box-shadow .15s;box-shadow:var(--shadow-sm)}
+.search-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,70,229,0.12)}
+.search-input::placeholder{color:var(--text4)}
+
+/* ── BUTTONS ── */
+.btn{padding:9px 18px;border-radius:var(--radius);border:1.5px solid var(--border2);background:var(--bg1);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--sans);font-weight:500;transition:all .13s;white-space:nowrap;box-shadow:var(--shadow-sm)}
+.btn:hover{background:var(--bg2);border-color:var(--border3);color:var(--text)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(79,70,229,0.25)}
+.btn.primary:hover{background:#3e36c9;box-shadow:0 4px 14px rgba(79,70,229,0.35)}
+.btn.sm{padding:5px 12px;font-size:12px}
+.btn:disabled{opacity:0.45;cursor:not-allowed}
+.btn.danger{background:rgba(214,60,60,.07);border-color:rgba(214,60,60,.22);color:var(--danger)}
+.btn.danger:hover{background:rgba(214,60,60,.13)}
+.btn.success{background:rgba(14,158,118,.08);border-color:rgba(14,158,118,.22);color:var(--ok)}
+.btn.success:hover{background:rgba(14,158,118,.15)}
+
+/* ── CHIPS ── */
+.chips{display:flex;gap:7px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.chip-lbl{font-size:11px;color:var(--text3);font-weight:500}
+.chip{padding:4px 12px;border-radius:20px;border:1.5px solid var(--border2);font-size:11px;cursor:pointer;color:var(--text2);background:var(--bg1);transition:all .13s;font-weight:500}
+.chip:hover{border-color:var(--border3);color:var(--text)}
+.chip.all.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.chip.cust.on{background:var(--cust-bg);border-color:var(--cust-border);color:var(--cust)}
+.chip.part.on{background:var(--part-bg);border-color:var(--part-border);color:var(--part)}
+.chip.clm.on{background:var(--clm-bg);border-color:var(--clm-border);color:var(--clm)}
+
+/* ── MODE TABS ── */
+.mode-tabs{display:flex;gap:6px;margin-bottom:18px}
+.mtab{padding:5px 14px;border-radius:var(--radius);border:1.5px solid var(--border2);font-size:12px;cursor:pointer;color:var(--text2);background:var(--bg1);transition:all .13s;font-weight:500}
+.mtab:hover{color:var(--text);background:var(--bg2)}
+.mtab.active{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(79,70,229,0.2)}
+
+/* ── NOTICE ── */
+.notice{background:rgba(79,70,229,0.06);border:1.5px solid rgba(79,70,229,0.18);border-radius:var(--radius);padding:9px 14px;font-size:12px;color:var(--accent);margin-bottom:14px}
+
+/* ── RESULTS HEADER ── */
+.sec-hdr{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.sec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);font-family:var(--mono)}
+.sec-count{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.sec-ms{margin-left:auto;font-size:11px;color:var(--ok);font-family:var(--mono);font-weight:500}
+
+/* ── METHOD TAGS ── */
+.method-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.4px;font-family:var(--mono)}
+.mt-hybrid{background:rgba(194,122,16,.12);color:var(--clm)}
+.mt-nlq{background:rgba(214,60,60,.1);color:var(--danger)}
+.mt-vector{background:rgba(79,70,229,.1);color:var(--accent)}
+
+/* ── ENTITY CARD ── */
+.ecard{background:var(--bg1);border:1.5px solid var(--border);border-radius:var(--radius-lg);margin-bottom:10px;transition:border .15s,box-shadow .15s;overflow:hidden;box-shadow:var(--shadow-sm)}
+.ecard:hover{border-color:var(--border2);box-shadow:var(--shadow-md)}
+.ecard.cust{border-left:3px solid var(--cust)}
+.ecard.part{border-left:3px solid var(--part)}
+.ecard.clm{border-left:3px solid var(--clm)}
+.ecard-head{display:flex;align-items:flex-start;gap:12px;padding:14px 16px 11px}
+.etype-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:13px;font-weight:700;flex-shrink:0;letter-spacing:-.3px}
+.ei-cust{background:var(--cust-bg);color:var(--cust)}
+.ei-part{background:var(--part-bg);color:var(--part)}
+.ei-clm{background:var(--clm-bg);color:var(--clm)}
+.ecard-title{font-size:14px;font-weight:600;color:var(--text);line-height:1.3}
+.ecard-ref{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.ecard-badges{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-left:auto;flex-shrink:0}
+
+/* ── BADGES ── */
+.ebadge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.3px;font-family:var(--mono)}
+.eb-cust{background:var(--cust-bg);color:var(--cust)}
+.eb-part{background:var(--part-bg);color:var(--part)}
+.eb-clm{background:var(--clm-bg);color:var(--clm)}
+.eb-covered{background:rgba(14,158,118,.1);color:var(--ok)}
+.eb-denied{background:rgba(214,60,60,.1);color:var(--danger)}
+.eb-partial{background:rgba(194,122,16,.1);color:var(--warn)}
+.eb-neutral{background:var(--bg3);color:var(--text2)}
+.eb-high{background:rgba(214,60,60,.1);color:var(--danger)}
+.eb-medium{background:rgba(194,122,16,.1);color:var(--warn)}
+.eb-low{background:rgba(14,158,118,.1);color:var(--ok)}
+.eb-elite{background:rgba(79,70,229,.1);color:var(--accent)}
+.eb-standard{background:var(--bg3);color:var(--text2)}
+.eb-watch{background:rgba(214,60,60,.1);color:var(--danger)}
+
+/* ── FIELD GRID ── */
+.field-grid{border-top:1px solid var(--border)}
+.field-row{padding:7px 0;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:2px}
+.field-row:last-child{border-bottom:none}
+.fl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;font-family:var(--mono);font-weight:600}
+.fv{font-size:12px;color:var(--text2)}
+.fv.mono{font-family:var(--mono);font-size:11px}
+.fv.em{color:var(--text);font-weight:600}
+.fv.ok{color:var(--ok)}
+.fv.warn{color:var(--warn)}
+.fv.err{color:var(--danger)}
+
+/* ── FIELD SECTIONS ── */
+/* Each section = a labelled block that resets the grid */
+.fsec{border-bottom:1.5px solid var(--border)}
+.fsec:last-child{border-bottom:none}
+.fsec-hdr{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 16px 6px;
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  position:sticky; /* visually anchors section title */
+}
+.fsec-title{
+  font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  font-family:var(--mono);color:var(--text3);
+}
+.fsec-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.fsec-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
+  gap:0;
+  padding:0 16px;
+}
+/* tag rows inside sections span full width */
+.fsec-grid .field-row.full{grid-column:1/-1}
+/* alternating section tint — every second section gets a barely-there bg */
+.fsec:nth-child(even) .fsec-grid{background:rgba(0,0,0,0.012)}
+
+/* Tags */
+.tag-list{display:flex;gap:4px;flex-wrap:wrap;margin-top:2px}
+.tag{font-size:10px;padding:2px 7px;border-radius:3px;background:var(--bg3);color:var(--text2);font-family:var(--mono);border:1px solid var(--border)}
+
+/* Expand */
+.ecard-expand{border-top:1px solid var(--border);padding:0 16px}
+.expand-toggle{display:flex;align-items:center;gap:6px;padding:8px 0;font-size:11px;color:var(--text3);cursor:pointer;user-select:none;font-weight:500}
+.expand-toggle:hover{color:var(--accent)}
+.expand-toggle svg{width:12px;height:12px;transition:transform .15s}
+.expand-toggle.open svg{transform:rotate(180deg)}
+.expand-body{display:none;padding-bottom:10px}
+.expand-body.open{display:block}
+
+/* Semantic text */
+.sem-text{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-size:11px;color:var(--text2);line-height:1.7;font-family:var(--mono);margin-top:6px;word-break:break-word;white-space:pre-wrap}
+.score-pill{font-size:10px;color:var(--text3);background:var(--bg3);padding:2px 8px;border-radius:10px;font-family:var(--mono);border:1px solid var(--border)}
+.ecard-foot{display:flex;align-items:center;gap:7px;padding:8px 16px;border-top:1px solid var(--border);background:var(--bg2)}
+
+/* Empty / loading */
+.empty{text-align:center;padding:44px 20px;color:var(--text3)}
+.empty svg{width:32px;height:32px;margin-bottom:10px;opacity:.3}
+.loading-row{display:flex;align-items:center;gap:10px;color:var(--text3);font-size:13px;padding:20px 0}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ─────────────────────────────────────────────
+   SKELETON LOADER
+   ───────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -600px 0 }
+  100% { background-position:  600px 0 }
+}
+
+.sk-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* status bar above the cards */
+.sk-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+/* individual shimmer block */
+.sk-line {
+  border-radius: 5px;
+  background: var(--shimmer-bg);
+  background-image: linear-gradient(
+    90deg,
+    var(--shimmer-from) 0%,
+    var(--shimmer-mid) 50%,
+    var(--shimmer-from) 100%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+/* a card-shaped skeleton */
+.sk-card {
+  background: var(--bg1);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+/* coloured left border — rotates through entity colours */
+.sk-card:nth-child(3n+1) { border-left: 3px solid var(--cust-border); }
+.sk-card:nth-child(3n+2) { border-left: 3px solid var(--part-border); }
+.sk-card:nth-child(3n+0) { border-left: 3px solid var(--clm-border); }
+
+.sk-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px 11px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sk-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.sk-head-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.sk-badges {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.sk-badge {
+  height: 18px;
+  border-radius: 4px;
+}
+
+.sk-field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  padding: 0 16px;
+  gap: 0;
+}
+
+.sk-field {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sk-field:last-child { border-bottom: none; }
+
+.sk-foot {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  padding: 8px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg2);
+}
+
+/* searching status row */
+.sk-searching {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: var(--text3);
+  font-family: var(--mono);
+}
+
+/* ── ENTITY BROWSER ── */
+.etabs{display:flex;border-bottom:1.5px solid var(--border);margin-bottom:18px}
+.etab{padding:9px 20px;font-size:13px;cursor:pointer;color:var(--text2);border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:all .13s;font-weight:500}
+.etab:hover{color:var(--text)}
+.etab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.browser-controls{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.b-input{flex:1;min-width:180px;background:var(--bg1);border:1.5px solid var(--border2);border-radius:var(--radius);padding:8px 12px;font-size:13px;color:var(--text);outline:none;font-family:var(--sans);box-shadow:var(--shadow-sm)}
+.b-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,70,229,0.1)}
+.b-select{background:var(--bg1);border:1.5px solid var(--border2);border-radius:var(--radius);padding:8px 12px;font-size:13px;color:var(--text);outline:none;max-width:160px;font-family:var(--sans);box-shadow:var(--shadow-sm)}
+.b-select:focus{border-color:var(--accent)}
+
+/* Data table */
+.dtable-wrap{overflow-x:auto;border-radius:var(--radius-lg);border:1.5px solid var(--border);box-shadow:var(--shadow-sm)}
+.dtable{width:100%;border-collapse:collapse;background:var(--bg1)}
+.dtable th{text-align:left;padding:10px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);border-bottom:1.5px solid var(--border);font-family:var(--mono);white-space:nowrap;background:var(--bg2)}
+.dtable td{padding:10px 14px;font-size:12px;color:var(--text2);border-bottom:1px solid var(--border);vertical-align:middle}
+.dtable tr:last-child td{border-bottom:none}
+.dtable tr:hover td{background:var(--bg2)}
+.dtable td.nm{color:var(--text);font-weight:600}
+.dtable td.mono{font-family:var(--mono);font-size:11px}
+
+/* Pagination */
+.pagination{display:flex;align-items:center;gap:6px;margin-top:14px;justify-content:flex-end;flex-wrap:wrap}
+.pg-info{font-size:11px;color:var(--text3);margin-right:auto;font-family:var(--mono)}
+
+/* ── INDEX STATS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:22px}
+.stat-card{background:var(--bg1);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow-sm);transition:box-shadow .15s}
+.stat-card:hover{box-shadow:var(--shadow-md)}
+.stat-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;font-family:var(--mono);font-weight:700;margin-bottom:8px}
+.stat-value{font-size:26px;font-weight:700;color:var(--text);font-family:var(--display)}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.action-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:22px}
+.action-card{background:var(--bg1);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow-sm)}
+.act-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px;font-family:var(--display)}
+.act-desc{font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.6}
+
+/* Terminal */
+.terminal{background:#1a1d24;border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:14px;font-family:var(--mono);font-size:11px;line-height:1.8;height:380px;overflow-y:auto;box-shadow:inset 0 2px 8px rgba(0,0,0,0.15)}
+.log-line{display:flex;gap:10px}
+.lt{color:#4a5068;flex-shrink:0}
+.ll{flex-shrink:0;font-weight:600;width:50px}
+.li{color:#60aaee}.lw{color:#e8a040}.le{color:#e05252}.ld{color:#44495e}
+.lm{color:#b8c2d8}
+
+/* DSL block */
+.dsl-block{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;font-family:var(--mono);font-size:11px;color:var(--accent);overflow-x:auto;white-space:pre-wrap;word-break:break-all;margin-top:8px}
+details summary{font-size:11px;color:var(--text3);cursor:pointer;padding:5px 0;font-weight:500}
+details summary:hover{color:var(--accent)}
+hr.div{border:none;border-top:1.5px solid var(--border);margin:18px 0}
+
+/* Risk / confidence */
+.risk-bar{display:flex;align-items:center;gap:6px}
+.risk-track{flex:1;height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.risk-fill{height:4px;border-radius:2px}
+.rf-high{background:var(--danger)}
+.rf-med{background:var(--warn)}
+.rf-low{background:var(--ok)}
+.conf{display:flex;align-items:center;gap:5px}
+.conf-dots{display:flex;gap:2px}
+.conf-dot{width:6px;height:6px;border-radius:1px}
+.cd-on{background:var(--ok)}
+.cd-off{background:var(--bg4)}
+.stars{color:var(--warn);font-size:11px;letter-spacing:1px}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal-box{background:var(--bg);border-radius:var(--radius-xl);width:90%;max-width:800px;max-height:85vh;display:flex;flex-direction:column;box-shadow:var(--shadow-md);transform:translateY(10px);transition:transform .2s}
+.modal-overlay.open .modal-box{transform:translateY(0)}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg1);border-radius:var(--radius-xl) var(--radius-xl) 0 0}
+.modal-title{font-family:var(--display);font-size:15px;font-weight:700;color:var(--text)}
+.modal-close{cursor:pointer;color:var(--text3);padding:4px;border-radius:4px;transition:all .15s}
+.modal-close:hover{background:var(--bg2);color:var(--text)}
+.modal-body{padding:20px;overflow-y:auto;flex:1}
+.link{color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.link:hover{color:#3e36c9}
+</style>
 </head>
-
 <body>
-  <div class="app">
+<div class="app">
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="logo">
-        <div class="logo-mark">Hori<span>zon</span></div>
-        <div class="logo-sub">AI Search Platform</div>
-      </div>
-      <div class="nav-item active" onclick="switchTab('global')">
-        <span class="nav-icon">&#9906;</span> Global Search
-      </div>
-      <div class="nav-item" onclick="switchTab('entities')">
-        <span class="nav-icon">&#9783;</span> Entity Browser
-      </div>
-      <!-- <div class="nav-item" onclick="switchTab('index')">
-        <span class="nav-icon">&#9881;</span> Index Management
-      </div> -->
-      <div class="nav-item" onclick="switchTab('logs')">
-        <span class="nav-icon">&#9632;</span> Logs
-      </div>
-    </aside>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logomark">Hori<em>zon</em></div>
+    <div class="sb-ver">v2 index · horizon_v2</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-sec">Search</div>
+    <div class="sb-item active" onclick="switchTab('search')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      Global Search
+    </div>
+    <div class="sb-item" onclick="switchTab('entities')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Entity Browser
+    </div>
+    <div class="sb-sec">System</div>
+    <div class="sb-item" onclick="switchTab('index')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Index Management
+    </div>
+    <div class="sb-item" onclick="switchTab('logs')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 10h16M4 14h10M4 18h7"/></svg>
+      Logs
+    </div>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-status"><div class="sb-dot" id="api-dot"></div><span id="api-status-txt">Checking API…</span></div>
+  </div>
+</aside>
 
-    <!-- Main -->
-    <div class="main">
+<!-- MAIN -->
+<div class="main">
 
-      <!-- Tab: Global Search -->
-      <div id="tab-global" class="tab-panel active">
-        <div class="topbar">
-          <div>
-            <div class="topbar-title">Global Search</div>
-            <div class="topbar-sub">Hybrid · Natural Language</div>
-          </div>
-        </div>
-        <div class="content">
-
-          <!-- Search input -->
-          <div class="search-wrap">
-            <div class="search-input-row">
-              <div class="search-input-wrap">
-                <span class="search-icon-wrap">&#8981;</span>
-                <input id="global-search-input" class="search-box" type="text"
-                  placeholder="Search customers, partners, claims..." autocomplete="off"
-                  oninput="onSearchInput(this.value)" onkeydown="onSearchKey(event)" />
-              </div>
-              <button class="btn btn-primary" onclick="runAllSearch()">Search</button>
-            </div>
-          </div>
-
-          <!-- Entity filter chips -->
-          <div class="filter-chips">
-            <span class="filter-label">Filter:</span>
-            <span class="chip active" id="chip-all" onclick="toggleChip('all')">All</span>
-            <span class="chip c-customer" id="chip-customer" onclick="toggleChip('customer')">Customer</span>
-            <span class="chip c-partner" id="chip-partner" onclick="toggleChip('partner')">Partner</span>
-            <span class="chip c-claim" id="chip-claim" onclick="toggleChip('claim')">Claim</span>
-          </div>
-
-          <!-- Search mode selector -->
-          <div class="mode-tabs">
-            <span class="mode-tab" id="mtab-nlq" onclick="toggleNLQ()">&#128172; Enable Natural Language Search</span>
-          </div>
-
-          <!-- NLQ extra box (only in nlq mode) -->
-          <div id="nlq-hint" style="display:none;" class="notice mb-16">
-            Natural language mode: describe what you want in plain English, e.g. "Cancelled claims talking about fridge from London". GPT-4o will generate the OpenSearch query.
-          </div>
-
-          <!-- Results area -->
-          <div id="global-results"></div>
-
-        </div>
-      </div>
-
-      <!-- Tab: Entity Browser -->
-      <div id="tab-entities" class="tab-panel">
-        <div class="topbar">
-          <div>
-            <div class="topbar-title">Entity Browser</div>
-            <div class="topbar-sub">Indexed Data from OpenSearch</div>
-          </div>
-        </div>
-        <div class="content">
-          <div class="entity-tabs">
-            <div class="entity-tab active" id="etab-customer" onclick="switchEntity('customer')">Customers</div>
-            <div class="entity-tab" id="etab-partner" onclick="switchEntity('partner')">Partners</div>
-            <div class="entity-tab" id="etab-claim" onclick="switchEntity('claim')">Claims</div>
-          </div>
-          <div class="browser-controls">
-            <input class="browser-search" type="text" id="browser-search-input"
-              placeholder="Search name, email, reference..." onkeydown="if(event.key==='Enter') loadEntityBrowser(1)" />
-            <select id="browser-filter1" class="browser-search" style="max-width:140px;"
-              onchange="loadEntityBrowser(1)">
-              <option value="">All statuses</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-            <select id="browser-filter2" class="browser-search" style="max-width:160px;"
-              onchange="loadEntityBrowser(1)">
-              <option value="">All reviews</option>
-              <option value="Approved">Approved</option>
-              <option value="Pending">Pending</option>
-              <option value="Flagged">Flagged</option>
-              <option value="Passed">Passed</option>
-            </select>
-            <button class="btn btn-sm btn-primary" onclick="loadEntityBrowser(1)">Search</button>
-            <button class="btn btn-sm" onclick="clearBrowser()">Clear</button>
-          </div>
-          <div id="entity-browser-results"></div>
-          <div class="pagination" id="entity-pagination"></div>
-        </div>
-      </div>
-
-      <!-- Tab: Index Management -->
-      <div id="tab-index" class="tab-panel">
-        <div class="topbar">
-          <div>
-            <div class="topbar-title">Index Management</div>
-            <div class="topbar-sub">Sync, reset, and monitor the OpenSearch index</div>
-          </div>
-        </div>
-        <div class="content">
-          <div id="index-notice"></div>
-          <div class="index-grid" id="index-stats">
-            <div class="stat-card">
-              <div class="stat-label">Total Documents</div>
-              <div class="stat-value" id="stat-docs">-</div>
-              <div class="stat-sub">Across all entity types</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Customers</div>
-              <div class="stat-value" id="stat-customers">-</div>
-              <div class="stat-sub">Indexed records</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Partners</div>
-              <div class="stat-value" id="stat-partners">-</div>
-              <div class="stat-sub">Indexed records</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Claims</div>
-              <div class="stat-value" id="stat-claims">-</div>
-              <div class="stat-sub">Indexed records</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">API Status</div>
-              <div class="stat-value" id="stat-api" style="font-size:15px; margin-top:4px;">Checking...</div>
-              <div class="stat-sub">Backend health</div>
-            </div>
-          </div>
-          <div class="action-grid">
-            <div class="action-card">
-              <div class="action-title">&#128260; Sync Index</div>
-              <div class="action-desc">Pull latest data from PostgreSQL and sync all entities into OpenSearch. Preserves
-                existing index structure. Runs automatically every 15 minutes.</div>
-              <button class="btn btn-success btn-sm" onclick="triggerSync()">Sync Now</button>
-            </div>
-            <div class="action-card">
-              <div class="action-title">&#9851; Reset Index</div>
-              <div class="action-desc">Drop and recreate the OpenSearch index, then run a full sync. All existing
-                indexed data is deleted. Use only when index schema changes.</div>
-              <button class="btn btn-danger btn-sm" onclick="triggerReset()">Reset &amp; Rebuild</button>
-            </div>
-          </div>
-          <div id="index-log" class="log-terminal" style="height:200px;"></div>
-        </div>
-      </div>
-
-      <!-- Tab: Logs -->
-      <div id="tab-logs" class="tab-panel">
-        <div class="topbar">
-          <div>
-            <div class="topbar-title">Logs</div>
-            <div class="topbar-sub">Search activity and backend events</div>
-          </div>
-          <button class="btn btn-sm ml-auto" onclick="clearLogs()">Clear</button>
-          <button class="btn btn-sm btn-primary" onclick="toggleAutoRefresh()" id="auto-refresh-btn">&#9654;
-            Auto-refresh</button>
-        </div>
-        <div class="content">
-          <div class="notice">Logs reflect search activity in this session. Backend health is polled every 10 seconds
-            when auto-refresh is on.</div>
-          <div class="log-terminal" id="log-terminal"></div>
-        </div>
-      </div>
-
+<!-- ═══ TAB: GLOBAL SEARCH ═══ -->
+<div id="tab-search" class="tab-panel active">
+  <div class="topbar">
+    <div><div class="tb-title">Global Search</div><div class="tb-sub">BM25 + vector hybrid · NLQ via GPT-4o</div></div>
+    <div class="tb-right">
+      <span id="tb-mode-pill" class="method-tag mt-hybrid">Hybrid</span>
     </div>
   </div>
-
-  <!-- <script>
-    //const API = 'https://ai.dev.horizon.ths.agency/api';
-    const API = 'http://localhost:8000/api';
-
-    // ── State ─────────────────────────────────────────────────────────────────
-    let selectedChips = [];  // empty = all
-    let searchMode = 'hybrid';
-    let currentEntity = 'customer';
-    let browserPage = 1;
-    const PAGE_SIZE = 15;
-    let searchTimeout = null;
-    let autoRefreshTimer = null;
-    let logLines = [];
-
-    // ── Tab switching ─────────────────────────────────────────────────────────
-    function switchTab(tab) {
-      ['global', 'entities', 'index', 'logs'].forEach(t => {
-        document.getElementById('tab-' + t).classList.toggle('active', t === tab);
-      });
-      document.querySelectorAll('.nav-item').forEach((el, i) => {
-        el.classList.toggle('active', ['global', 'entities', 'index', 'logs'][i] === tab);
-      });
-      if (tab === 'entities') loadEntityBrowser(1);
-      if (tab === 'index') loadIndexStats();
-      if (tab === 'logs') renderLogs();
-    }
-
-    // ── Entity filter chips ───────────────────────────────────────────────────
-    function toggleChip(type) {
-      if (type === 'all') {
-        selectedChips = [];
-        ['all', 'customer', 'partner', 'claim'].forEach(c => {
-          document.getElementById('chip-' + c).classList.toggle('active', c === 'all');
-        });
-      } else {
-        const idx = selectedChips.indexOf(type);
-        if (idx > -1) selectedChips.splice(idx, 1);
-        else selectedChips.push(type);
-        document.getElementById('chip-all').classList.toggle('active', selectedChips.length === 0);
-        ['customer', 'partner', 'claim'].forEach(c => {
-          document.getElementById('chip-' + c).classList.toggle('active', selectedChips.includes(c));
-        });
-      }
-    }
-
-    function getEntityFilter() { return selectedChips.length ? selectedChips : null; }
-
-    // ── Mode tabs ─────────────────────────────────────────────────────────────
-    let isNlqMode = false;
-    function toggleNLQ() {
-      isNlqMode = !isNlqMode;
-      searchMode = isNlqMode ? 'nlq' : 'hybrid';
-      document.getElementById('mtab-nlq').classList.toggle('active', isNlqMode);
-      document.getElementById('nlq-hint').style.display = isNlqMode ? 'block' : 'none';
-      const placeholder = isNlqMode
-        ? 'Describe what you want, e.g. "recent escalated claims for VIP customers"'
-        : 'Search customers, partners, claims...';
-      document.getElementById('global-search-input').placeholder = placeholder;
-      runAllSearch();
-    }
-
-    // ── Live Search ───────────────────────────────────────────────────────────
-    function onSearchInput(val) {
-      clearTimeout(searchTimeout);
-      if (val.trim().length === 0) {
-        document.getElementById('global-results').innerHTML = '';
-        return;
-      }
-      searchTimeout = setTimeout(() => runAllSearch(), 300);
-    }
-
-    function onSearchKey(e) {
-      if (e.key === 'Enter') {
-        clearTimeout(searchTimeout);
-        runAllSearch();
-      }
-    }
-
-    // ── Search execution ──────────────────────────────────────────────────────
-    async function runAllSearch() {
-      const query = document.getElementById('global-search-input').value.trim();
-      if (!query) {
-        document.getElementById('global-results').innerHTML = '';
-        return;
-      }
-      addLog('INFO', `Search [${searchMode}]: "${query}"`);
-
-      const resultsEl = document.getElementById('global-results');
-      resultsEl.innerHTML = `<div class="loading-row"><span class="spinner"></span> Running ${searchMode} search...</div>`;
-
-      const ef = getEntityFilter();
-
-      if (searchMode === 'hybrid') {
-        await runSingleMode('hybrid', query, ef, resultsEl);
-      } else if (searchMode === 'nlq') {
-        await runNLQ(query, ef, resultsEl);
-      }
-    }
-
-    async function runSingleMode(mode, query, ef, container) {
-      const endpoint = '/search/hybrid';
-      const body = { query, entity_types: ef, size: 10, lexical_weight: 0.7, semantic_weight: 0.3 };
-      const [data, ms] = await timedPost(endpoint, body);
-      const results = data?.results || [];
-      const methodClass = `method-${mode}`;
-      const html = `
-    <div class="results-section">
-      <div class="section-header">
-        <span class="section-title">Hybrid (BM25 + Semantic)</span>
-        <span class="method-tag ${methodClass}">${mode}</span>
-        <span class="section-count">${results.length} results</span>
-        <span class="section-latency">&#9201; ${ms}ms</span>
+  <div class="content">
+    <div class="search-row">
+      <div class="search-wrap">
+        <span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
+        <input id="gs-input" class="search-input" type="text" placeholder="Search customers, partners, claims…" autocomplete="off" oninput="onSearchInput(this.value)" onkeydown="if(event.key==='Enter'){clearTimeout(searchTimer);runSearch()}"/>
       </div>
-      ${renderCards(results, mode)}
-    </div>`;
-      container.innerHTML = html;
-    }
+      <button class="btn primary" onclick="clearTimeout(searchTimer);runSearch()">Search</button>
+    </div>
 
-    async function runNLQ(query, ef, container) {
-      const [data, ms] = await timedPost('/search/nlq', { query, entity_types: ef, size: 10 });
-      const results = data?.results || [];
-      const genQ = data?.generated_query;
-      const html = `
-    <div class="results-section">
-      <div id="nlq-hint" class="notice mb-16">
-          NLQ Output: ${data?.summary}
-        </div>
-      <div class="section-header">
-        <span class="section-title">Natural Language Query</span>
-        
-        <span class="method-tag method-nlq">GPT-4o → OpenSearch</span>
-        <span class="section-count">${results.length} results</span>
-        <span class="section-latency">&#9201; ${ms}ms</span>
+    <div class="chips">
+      <span class="chip-lbl">Filter by:</span>
+      <span class="chip all on" id="chip-all" onclick="toggleChip('all')">All entities</span>
+      <span class="chip cust" id="chip-customer" onclick="toggleChip('customer')">
+        <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--cust);margin-right:5px;vertical-align:1px"></span>Customers
+      </span>
+      <span class="chip part" id="chip-partner" onclick="toggleChip('partner')">
+        <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--part);margin-right:5px;vertical-align:1px"></span>Partners
+      </span>
+      <span class="chip clm" id="chip-claim" onclick="toggleChip('claim')">
+        <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--clm);margin-right:5px;vertical-align:1px"></span>Claims
+      </span>
+    </div>
+
+    <div class="mode-tabs">
+      <span class="mtab active" onclick="setMode('hybrid')">Hybrid (BM25 + Vector)</span>
+      <span class="mtab" onclick="setMode('nlq')">Natural Language (GPT-4o)</span>
+    </div>
+
+    <div id="gs-results"></div>
+  </div>
+</div>
+
+<!-- ═══ TAB: ENTITY BROWSER ═══ -->
+<div id="tab-entities" class="tab-panel">
+  <div class="topbar">
+    <div><div class="tb-title">Entity Browser</div><div class="tb-sub">Live data from horizon_v2 index</div></div>
+  </div>
+  <div class="content">
+    <div class="etabs">
+      <div class="etab active" id="etab-customer" onclick="switchEntity('customer')">Customers</div>
+      <div class="etab" id="etab-partner" onclick="switchEntity('partner')">Partners</div>
+      <div class="etab" id="etab-claim" onclick="switchEntity('claim')">Claims</div>
+    </div>
+    <div class="browser-controls">
+      <input class="b-input" id="b-search" type="text" placeholder="Search name, email, reference…" onkeydown="if(event.key==='Enter') loadBrowser(1)"/>
+      <select class="b-select" id="b-f1" onchange="loadBrowser(1)"><option value="">All statuses</option><option>active</option><option>suspended</option><option>probation</option></select>
+      <select class="b-select" id="b-f2" onchange="loadBrowser(1)"><option value="">All decisions</option><option>covered</option><option>partial</option><option>denied</option></select>
+      <button class="btn sm" id="sort-btn" onclick="toggleSort()">↑ ID asc</button>
+      <button class="btn sm primary" onclick="loadBrowser(1)">Apply</button>
+    </div>
+    <div id="b-results"></div>
+    <div class="pagination" id="b-pages"></div>
+  </div>
+</div>
+
+<!-- ═══ TAB: INDEX MANAGEMENT ═══ -->
+<div id="tab-index" class="tab-panel">
+  <div class="topbar">
+    <div><div class="tb-title">Index Management</div><div class="tb-sub">horizon_v2 · sync, reset, monitor</div></div>
+  </div>
+  <div class="content">
+    <div id="idx-notice"></div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">Total docs</div><div class="stat-value" id="s-total">—</div><div class="stat-sub">All entity types</div></div>
+      <div class="stat-card"><div class="stat-label">Customers</div><div class="stat-value" id="s-cust">—</div><div class="stat-sub">Indexed records</div></div>
+      <div class="stat-card"><div class="stat-label">Partners</div><div class="stat-value" id="s-part">—</div><div class="stat-sub">Indexed records</div></div>
+      <div class="stat-card"><div class="stat-label">Claims</div><div class="stat-value" id="s-clm">—</div><div class="stat-sub">Indexed records</div></div>
+      <div class="stat-card"><div class="stat-label">API health</div><div class="stat-value" id="s-api" style="font-size:15px;margin-top:4px">Checking…</div><div class="stat-sub">Backend status</div></div>
+    </div>
+    <div class="action-grid">
+      <div class="action-card">
+        <div class="act-title">Incremental Sync</div>
+        <div class="act-desc">Re-indexes rows updated since last watermark. Runs automatically every 15 min. Use for routine refreshes.</div>
+        <button class="btn success sm" onclick="triggerSync()">Sync now</button>
       </div>
-      ${genQ ? `<details><summary>&#128270; View generated OpenSearch DSL</summary><pre class="code-block">${esc(genQ)}</pre></details>` : ''}
-      <div style="margin-top:12px;">${renderCards(results, 'nlq')}</div>
-    </div>`;
-      container.innerHTML = html;
-    }
-
-
-
-    // ── Card rendering ────────────────────────────────────────────────────────
-    function renderCards(results, method) {
-      if (!results.length) return `<div class="empty-state"><div class="empty-icon">&#128270;</div><div class="empty-text">No results found</div></div>`;
-      return results.map(r => renderCard(r, method)).join('');
-    }
-
-    function renderCard(r, method) {
-      const et = r.entity_type || 'unknown';
-      const initials = (r.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-      const statusClass = getStatusClass(r.status);
-      const methodClass = `method-${method}`;
-      const methodLabel = { hybrid: 'Hybrid', nlq: 'NLQ' }[method] || method;
-
-      const meta = [];
-      if (r.email) meta.push(`<span class="meta-item"><span class="meta-label">Email</span>${esc(r.email)}</span>`);
-      if (r.plan_name) meta.push(`<span class="meta-item"><span class="meta-label">Plan</span>${esc(r.plan_name)}</span>`);
-      if (r.quality_index != null) meta.push(`<span class="meta-item"><span class="meta-label">QI</span>${r.quality_index}</span>`);
-      if (r.escalation_count) meta.push(`<span class="meta-item"><span class="meta-label">Escalations</span>${r.escalation_count}</span>`);
-      if (r.is_active != null) meta.push(`<span class="meta-item"><span class="meta-label">Active</span>${r.is_active ? 'Yes' : 'No'}</span>`);
-      if (r.city) meta.push(`<span class="meta-item"><span class="meta-label">City</span>${esc(r.city)}</span>`);
-      if (r.province) meta.push(`<span class="meta-item"><span class="meta-label">Province</span>${esc(r.province)}</span>`);
-      if (r.amount != null) meta.push(`<span class="meta-item"><span class="meta-label">Amount</span>$${Number(r.amount).toFixed(2)}</span>`);
-
-      return `
-    <div class="result-card">
-      <div class="card-header">
-        <div class="entity-icon icon-${et}">${initials}</div>
-        <div style="flex:1; min-width:0;">
-          <div class="card-name">${esc(r.name || r.reference || '#' + r.entity_id)}</div>
-          <div class="card-ref">${esc(r.reference || '')} ${r.entity_id ? '· ID: ' + r.entity_id : ''}</div>
-        </div>
-        <div class="card-badges">
-          <span class="suggest-badge badge-${et}">${et}</span>
-          ${r.status ? `<span class="status-pill ${statusClass}">${esc(r.status)}</span>` : ''}
-        </div>
+      <div class="action-card">
+        <div class="act-title">Full Reset + Rebuild</div>
+        <div class="act-desc">Drops and recreates the index, re-embeds every document. Long-running — use only after schema changes.</div>
+        <button class="btn danger sm" onclick="triggerReset()">Reset &amp; rebuild</button>
       </div>
-      ${meta.length ? `<div class="card-meta">${meta.join('')}</div>` : ''}
-      ${r.description ? `<div class="card-desc">${esc(r.description)}</div>` : ''}
-      <div class="card-footer">
-        <span class="method-tag ${methodClass}">${methodLabel}</span>
-        <span class="score-pill">score: ${(r.score || 0).toFixed(4)}</span>
-        ${r.created_at ? `<span class="score-pill">${r.created_at.slice(0, 10)}</span>` : ''}
+    </div>
+    <div class="terminal" id="idx-log"></div>
+  </div>
+</div>
+
+<!-- ═══ TAB: LOGS ═══ -->
+<div id="tab-logs" class="tab-panel">
+  <div class="topbar">
+    <div><div class="tb-title">Session Logs</div><div class="tb-sub">Search activity &amp; API events</div></div>
+    <div class="tb-right">
+      <button class="btn sm" onclick="clearLogs()">Clear</button>
+      <button class="btn sm primary" id="ar-btn" onclick="toggleAutoRefresh()">▶ Auto-refresh</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="notice" style="margin-bottom:16px">Logs reflect this session's activity. Backend health polled every 10 s when auto-refresh is active.</div>
+    <div class="terminal" id="log-terminal"></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- ── MODAL OVERLAY ── -->
+<div id="rel-modal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-title">Details</div>
+      <div class="modal-close" onclick="closeModal()">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </div>
-    </div>`;
-    }
+    </div>
+    <div class="modal-body" id="modal-body">
+      <!-- Content injected here -->
+    </div>
+  </div>
+</div>
 
-    function getStatusClass(s) {
-      if (!s) return '';
-      const l = s.toLowerCase();
-      if (l.includes('open')) return 'status-open';
-      if (l.includes('closed')) return 'status-closed';
-      if (l.includes('cancel')) return 'status-cancelled';
-      if (l.includes('review') || l.includes('progress')) return 'status-review';
-      if (l === 'active') return 'status-active';
-      if (l === 'inactive') return 'status-inactive';
-      return '';
-    }
+</div><!-- /app -->
 
-    // ── Entity Browser (live Postgres via /api/entities/*) ────────────────────
-    function switchEntity(type) {
-      currentEntity = type;
-      ['customer', 'partner', 'claim'].forEach(e => {
-        document.getElementById('etab-' + e).classList.toggle('active', e === type);
-      });
-      // Update filter2 options per entity
-      const f2 = document.getElementById('browser-filter2');
-      if (type === 'claim') {
-        f2.innerHTML = `<option value="">All reviews</option><option>Passed</option><option>Pending</option><option>QA_Review</option>`;
-      } else if (type === 'partner') {
-        f2.innerHTML = `<option value="">All types</option><option value="provider">Provider</option><option value="supplier">Supplier</option>`;
-      } else {
-        f2.innerHTML = `<option value="">All reviews</option><option>Approved</option><option>Pending</option><option>Flagged</option>`;
-      }
-      document.getElementById('browser-search-input').value = '';
-      loadEntityBrowser(1);
-    }
+<script>
+const API = 'https://ai.dev.horizon.ths.agency/api';
+let chips = [], searchMode = 'hybrid', searchTimer = null;
+let currentEntity = 'customer', bPage = 1, bSort = 'asc';
+let logs = [], arTimer = null;
+const controllers = {}, reqIds = {};
 
-    function clearBrowser() {
-      document.getElementById('browser-search-input').value = '';
-      document.getElementById('browser-filter1').value = '';
-      document.getElementById('browser-filter2').value = '';
-      loadEntityBrowser(1);
-    }
-
-    async function loadEntityBrowser(page) {
-      browserPage = page;
-      const search = document.getElementById('browser-search-input').value.trim();
-      const filter1 = document.getElementById('browser-filter1').value;
-      const filter2 = document.getElementById('browser-filter2').value;
-      const container = document.getElementById('entity-browser-results');
-      container.innerHTML = `<div class="loading-row"><span class="spinner"></span> Loading ${currentEntity}s from OpenSearch</div>`;
-
-      const params = new URLSearchParams({ page, page_size: PAGE_SIZE });
-      if (search) params.set('search', search);
-      if (filter1) params.set('status', filter1);
-      if (filter2) {
-        if (currentEntity === 'partner') params.set('type', filter2);
-        else if (filter2) params.set('review', filter2);
-      }
-
-      const t0 = performance.now();
-      try {
-        const res = await fetch(`${API}/entities/${currentEntity}s?${params}`);
-        const ms = Math.round(performance.now() - t0);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        addLog('DEBUG', `GET /entities/${currentEntity}s → ${ms}ms, ${data.total} rows`);
-        renderBrowserTable(data, ms);
-      } catch (e) {
-        addLog('ERROR', `Entity browser failed: ${e.message}`);
-        container.innerHTML = `<div class="empty-state"><div class="empty-icon">&#9888;</div><div class="empty-text">Failed to load: ${esc(e.message)}</div></div>`;
-      }
-    }
-
-    function renderBrowserTable(data, ms) {
-      const { total, page, page_size, results, entity_type } = data;
-      const container = document.getElementById('entity-browser-results');
-      const totalPages = Math.ceil(total / page_size);
-      const from = (page - 1) * page_size + 1;
-      const to = Math.min(page * page_size, total);
-
-      if (!results.length) {
-        container.innerHTML = `<div class="empty-state"><div class="empty-icon">&#128270;</div><div class="empty-text">No ${entity_type}s found</div></div>`;
-        document.getElementById('entity-pagination').innerHTML = '';
-        return;
-      }
-
-      const cols = getEntityCols(entity_type);
-      const notice = `<div style="font-size:12px;color:var(--text3);margin-bottom:8px;">
-    Showing ${from}–${to} of <strong style="color:var(--text2)">${total}</strong> ${entity_type}s · ${ms}ms · live from PostgreSQL
+/* ── skeleton loader ─────────────────────────────────────────── */
+/*
+  Renders N shimmer card skeletons that mirror the real card layout.
+  Completely blocks the results area — no "No results" flash possible.
+*/
+function skeletonCard() {
+  return `<div class="sk-card">
+    <div class="sk-card-head">
+      <div class="sk-line sk-avatar"></div>
+      <div class="sk-head-lines">
+        <div class="sk-line" style="height:13px;width:55%;border-radius:4px"></div>
+        <div class="sk-line" style="height:10px;width:38%;border-radius:4px"></div>
+      </div>
+      <div class="sk-badges">
+        <div class="sk-line sk-badge" style="width:54px"></div>
+        <div class="sk-line sk-badge" style="width:44px"></div>
+      </div>
+    </div>
+    <div class="sk-field-grid">
+      ${Array.from({length:12}, (_,i) => `
+        <div class="sk-field">
+          <div class="sk-line" style="height:8px;width:${30+Math.floor(((i*37)%4)*10)}%;border-radius:3px"></div>
+          <div class="sk-line" style="height:11px;width:${50+Math.floor(((i*53)%5)*8)}%;border-radius:3px"></div>
+        </div>`).join('')}
+    </div>
+    <div class="sk-foot">
+      <div class="sk-line" style="height:16px;width:52px;border-radius:4px"></div>
+      <div class="sk-line" style="height:16px;width:80px;border-radius:10px"></div>
+      <div class="sk-line" style="height:16px;width:66px;border-radius:10px"></div>
+    </div>
   </div>`;
-      const table = `
-    <div style="overflow-x:auto;">
-    <table class="data-table">
-      <thead><tr>${cols.map(c => `<th>${c.label}</th>`).join('')}</tr></thead>
-      <tbody>${results.map(r => `<tr>${cols.map(c => `<td class="${c.cls || ''}">${esc(getField(r, c.key))}</td>`).join('')}</tr>`).join('')}</tbody>
-    </table></div>`;
-      container.innerHTML = notice + table;
+}
 
-      // Full pagination controls
-      const pg = document.getElementById('entity-pagination');
-      if (totalPages <= 1) { pg.innerHTML = ''; return; }
-      let btns = `<span class="page-info">${from}–${to} of ${total}</span>`;
-      btns += `<button class="btn btn-sm" ${page <= 1 ? 'disabled' : ''} onclick="loadEntityBrowser(${page - 1})">&#8592; Prev</button>`;
-      const start = Math.max(1, page - 2), end = Math.min(totalPages, page + 2);
-      for (let p = start; p <= end; p++) {
-        btns += `<button class="btn btn-sm ${p === page ? 'btn-primary' : ''}" onclick="loadEntityBrowser(${p})">${p}</button>`;
-      }
-      btns += `<button class="btn btn-sm" ${page >= totalPages ? 'disabled' : ''} onclick="loadEntityBrowser(${page + 1})">Next &#8594;</button>`;
-      pg.innerHTML = btns;
-    }
-
-    function getEntityCols(et) {
-      if (et === 'customer') return [
-        // { label: 'ID', key: 'id' },
-        { label: 'Name', key: 'name', cls: 'name-cell' },
-        { label: 'Email', key: 'email' },
-        // { label: 'Phone', key: 'phone' },
-        { label: 'Status', key: 'status' },
-        // { label: 'Review', key: 'review_status' },
-        // { label: 'Quality Index', key: 'quality_index' },
-        // { label: 'Ext. Code', key: 'external_code' },
-        { label: 'Note', key: 'note' },
-        { label: 'Created', key: 'created_at' },
-      ];
-      if (et === 'partner') return [
-        { label: 'Name', key: 'name', cls: 'name-cell' },
-        { label: 'Email', key: 'email' },
-        
-        { label: 'Created', key: 'created_at' },
-      ];
-      if (et === 'claim') return [
-        { label: 'Reference', key: 'reference', cls: 'name-cell' },
-        { label: 'Description', key: 'description' },
-        { label: 'Status', key: 'status' },
-        { label: 'City', key: 'city' },
-        { label: 'Created', key: 'created_at' },
-      ];
-      return [];
-    }
-
-    function getField(r, key) {
-      const v = r[key];
-      if (v === null || v === undefined) return '—';
-      if (typeof v === 'boolean') return v ? 'Yes' : 'No';
-      if ((key === 'created_at' || key === 'start_time' || key === 'end_time') && v) return v.slice(0, 10);
-      if (key === 'description' && v) return v.length > 55 ? v.slice(0, 55) + '…' : v;
-      if (key === 'note' && v) return v.length > 40 ? v.slice(0, 40) + '…' : v;
-      if (key === 'plan_amount' && v) return '$' + Number(v).toFixed(2);
-      if (key === 'quality_index' && v) return Number(v).toFixed(1);
-      return String(v);
-    }
-
-    // ── Index Management ──────────────────────────────────────────────────────
-    async function loadIndexStats() {
-      document.getElementById('stat-api').textContent = 'Checking...';
-      try {
-        const res = await fetch('http://localhost:8000/health');
-        const d = await res.json();
-        document.getElementById('stat-api').textContent = d.status === 'ok' ? '&#9899; Online' : '&#9888; Degraded';
-        document.getElementById('stat-api').style.color = d.status === 'ok' ? 'var(--success)' : 'var(--warn)';
-      } catch {
-        document.getElementById('stat-api').textContent = '&#10007; Offline';
-        document.getElementById('stat-api').style.color = 'var(--danger)';
-      }
-
-      // Count each entity via a broad fuzzy search
-      for (const et of ['customer', 'partner', 'claim']) {
-        try {
-          const [d] = await timedPost('/search/fuzzy', { query: 'a', entity_types: [et], size: 1 });
-          document.getElementById('stat-' + et + 's') && (document.getElementById('stat-' + et + 's').textContent = d?.total ?? '-');
-          if (et === 'customer') document.getElementById('stat-customers').textContent = d?.total ?? '-';
-          if (et === 'partner') document.getElementById('stat-partners').textContent = d?.total ?? '-';
-          if (et === 'claim') document.getElementById('stat-claims').textContent = d?.total ?? '-';
-        } catch { }
-      }
-
-      // Total
-      try {
-        const [d] = await timedPost('/search/fuzzy', { query: 'a', entity_types: null, size: 1 });
-        document.getElementById('stat-docs').textContent = d?.total ?? '-';
-      } catch { }
-    }
-
-    async function triggerSync() {
-      appendIndexLog('INFO', 'Triggering manual sync...');
-      setNotice('index', 'info', 'Syncing... this may take a moment.');
-      try {
-        const res = await fetch(`${API}/search/index/sync`, { method: 'POST' });
-        const d = await res.json();
-        appendIndexLog('INFO', 'Sync complete: ' + JSON.stringify(d.stats || {}));
-        setNotice('index', 'success', 'Sync complete! ' + JSON.stringify(d.stats || {}));
-        loadIndexStats();
-      } catch (e) {
-        appendIndexLog('ERROR', 'Sync failed: ' + e.message);
-        setNotice('index', 'danger', 'Sync failed: ' + e.message);
-      }
-    }
-
-    async function triggerReset() {
-      if (!confirm('This will drop and recreate the entire index. All indexed data will be deleted. Continue?')) return;
-      appendIndexLog('WARN', 'Resetting index...');
-      setNotice('index', 'warn', 'Resetting index and rebuilding — this may take several minutes.');
-      try {
-        const res = await fetch(`${API}/search/index/reset`, { method: 'POST' });
-        const d = await res.json();
-        appendIndexLog('INFO', 'Reset complete: ' + JSON.stringify(d.stats || {}));
-        setNotice('index', 'success', 'Index reset and synced. ' + JSON.stringify(d.stats || {}));
-        loadIndexStats();
-      } catch (e) {
-        appendIndexLog('ERROR', 'Reset failed: ' + e.message);
-        setNotice('index', 'danger', 'Reset failed: ' + e.message);
-      }
-    }
-
-    function appendIndexLog(level, msg) {
-      const el = document.getElementById('index-log');
-      const time = new Date().toLocaleTimeString();
-      const cls = level === 'ERROR' ? 'log-error' : level === 'WARN' ? 'log-warn' : 'log-info';
-      el.innerHTML += `<div class="log-line"><span class="log-time">${time}</span><span class="log-level ${cls}">${level}</span><span class="log-msg">${esc(msg)}</span></div>`;
-      el.scrollTop = el.scrollHeight;
-    }
-
-    function setNotice(tab, type, msg) {
-      const el = document.getElementById(tab + '-notice');
-      if (!el) return;
-      const cls = type === 'danger' ? 'notice-danger' : type === 'warn' ? 'notice-warn' : type === 'success' ? 'notice-success' : '';
-      el.innerHTML = `<div class="notice ${cls}" style="margin-bottom:16px;">${esc(msg)}</div>`;
-    }
-
-    // ── Logs ──────────────────────────────────────────────────────────────────
-    function addLog(level, msg) {
-      const time = new Date().toLocaleTimeString();
-      logLines.push({ time, level, msg });
-      if (logLines.length > 200) logLines.shift();
-      if (document.getElementById('tab-logs').classList.contains('active')) renderLogs();
-    }
-
-    function renderLogs() {
-      const el = document.getElementById('log-terminal');
-      if (!logLines.length) {
-        el.innerHTML = `<div class="log-line"><span class="log-msg" style="color:var(--text3);">No logs yet. Run a search to see activity.</span></div>`;
-        return;
-      }
-      el.innerHTML = logLines.map(l => {
-        const cls = l.level === 'ERROR' ? 'log-error' : l.level === 'WARN' ? 'log-warn' : l.level === 'DEBUG' ? 'log-debug' : 'log-info';
-        return `<div class="log-line"><span class="log-time">${l.time}</span><span class="log-level ${cls}">${l.level}</span><span class="log-msg">${esc(l.msg)}</span></div>`;
-      }).join('');
-      el.scrollTop = el.scrollHeight;
-    }
-
-    function clearLogs() { logLines = []; renderLogs(); }
-
-    function toggleAutoRefresh() {
-      const btn = document.getElementById('auto-refresh-btn');
-      if (autoRefreshTimer) {
-        clearInterval(autoRefreshTimer);
-        autoRefreshTimer = null;
-        btn.textContent = '▶ Auto-refresh';
-        btn.classList.remove('btn-primary');
-      } else {
-        autoRefreshTimer = setInterval(async () => {
-          try {
-            const res = await fetch('http://localhost:8000/health');
-            const d = await res.json();
-            addLog('DEBUG', `Health poll: ${JSON.stringify(d)}`);
-          } catch (e) {
-            addLog('WARN', 'Health poll failed: ' + e.message);
-          }
-        }, 10000);
-        btn.textContent = '⏹ Stop refresh';
-        btn.classList.add('btn-primary');
-        addLog('INFO', 'Auto-refresh started (10s interval)');
-      }
-    }
-
-    // ── HTTP helpers ──────────────────────────────────────────────────────────
-    // async function timedPost(endpoint, body) {
-    //   const t0 = performance.now();
-    //   try {
-    //     const res = await fetch(API + endpoint, {
-    //       method: 'POST',
-    //       headers: { 'Content-Type': 'application/json' },
-    //       body: JSON.stringify(body),
-    //     });
-    //     const ms = Math.round(performance.now() - t0);
-    //     if (!res.ok) {
-    //       const txt = await res.text();
-    //       addLog('ERROR', `${endpoint} → ${res.status}: ${txt.slice(0,80)}`);
-    //       return [{ results: [], total: 0, error: txt }, ms];
-    //     }
-    //     const data = await res.json();
-    //     addLog('DEBUG', `${endpoint} → ${ms}ms, ${data.total||0} results`);
-    //     return [data, ms];
-    //   } catch(e) {
-    //     const ms = Math.round(performance.now() - t0);
-    //     addLog('ERROR', `${endpoint} failed: ${e.message}`);
-    //     return [{ results: [], total: 0, error: e.message }, ms];
-    //   }
-    // }
-    let currentRequestId = 0;
-    let currentController = null;
-
-    async function timedPost(endpoint, body) {
-      if (currentController) currentController.abort();
-
-      currentController = new AbortController();
-
-      // ✅ increment request id
-      currentRequestId++;
-      const requestId = currentRequestId;
-
-      const t0 = performance.now();
-
-      try {
-        const res = await fetch(API + endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ...body,
-            request_id: requestId,   // ✅ send to backend
-          }),
-          signal: currentController.signal,
-        });
-
-        const ms = Math.round(performance.now() - t0);
-
-        if (!res.ok) {
-          const txt = await res.text();
-          return [{ results: [], total: 0, error: txt }, ms];
-        }
-
-        const data = await res.json();
-
-        // ✅ ignore stale responses (VERY IMPORTANT)
-        if (requestId !== currentRequestId) {
-          return [{ results: [], total: 0, stale: true }, ms];
-        }
-
-        return [data, ms];
-
-      } catch (e) {
-        const ms = Math.round(performance.now() - t0);
-
-        if (e.name === 'AbortError') {
-          return [{ results: [], total: 0 }, ms];
-        }
-
-        return [{ results: [], total: 0, error: e.message }, ms];
-      }
-    }
-
-    function esc(s) {
-      if (s === null || s === undefined) return '';
-      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-
-    // ── Init ──────────────────────────────────────────────────────────────────
-    addLog('INFO', 'Horizon Search UI initialized');
-    addLog('INFO', `Backend: ${API}`);
-  </script> -->
-  <script>
-    const API = 'https://ai.dev.horizon.ths.agency/api'; //Deployed url
-
-    let selectedChips = [];
-    let searchMode = 'hybrid';
-    let currentEntity = 'customer';
-    let browserPage = 1;
-    const PAGE_SIZE = 15;
-    let searchTimeout = null;
-    let autoRefreshTimer = null;
-    let logLines = [];
-
-    // ── Per-endpoint abort controllers & request IDs ───────────────────────────
-    const controllers = {};
-    const requestIds = {};
-
-    async function timedPost(endpoint, body) {
-      if (!controllers[endpoint]) controllers[endpoint] = null;
-      if (controllers[endpoint]) controllers[endpoint].abort();
-      controllers[endpoint] = new AbortController();
-
-      requestIds[endpoint] = (requestIds[endpoint] || 0) + 1;
-      const requestId = requestIds[endpoint];
-
-      const t0 = performance.now();
-      try {
-        const res = await fetch(API + endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...body, request_id: requestId }),
-          signal: controllers[endpoint].signal,
-        });
-        const ms = Math.round(performance.now() - t0);
-        if (!res.ok) {
-          const txt = await res.text();
-          addLog('ERROR', `${endpoint} → ${res.status}: ${txt.slice(0, 80)}`);
-          return [{ results: [], total: 0, error: txt }, ms];
-        }
-        const data = await res.json();
-        if (requestId !== requestIds[endpoint]) {
-          addLog('DEBUG', `${endpoint} stale response discarded (req ${requestId})`);
-          return [{ results: [], total: 0, stale: true }, ms];
-        }
-        addLog('DEBUG', `${endpoint} → ${ms}ms, ${data.total || 0} results`);
-        return [data, ms];
-      } catch (e) {
-        const ms = Math.round(performance.now() - t0);
-        if (e.name === 'AbortError') {
-          addLog('DEBUG', `${endpoint} request aborted (superseded)`);
-          return [{ results: [], total: 0 }, ms];
-        }
-        addLog('ERROR', `${endpoint} failed: ${e.message}`);
-        return [{ results: [], total: 0, error: e.message }, ms];
-      }
-    }
-
-    // ── Tab switching ─────────────────────────────────────────────────────────
-    function switchTab(tab) {
-      ['global', 'entities', 'index', 'logs'].forEach(t => {
-        document.getElementById('tab-' + t).classList.toggle('active', t === tab);
-      });
-      document.querySelectorAll('.nav-item').forEach((el, i) => {
-        el.classList.toggle('active', ['global', 'entities', 'index', 'logs'][i] === tab);
-      });
-      if (tab === 'entities') loadEntityBrowser(1);
-      if (tab === 'index') loadIndexStats();
-      if (tab === 'logs') renderLogs();
-    }
-
-    // ── Entity filter chips ───────────────────────────────────────────────────
-    function toggleChip(type) {
-      if (type === 'all') {
-        selectedChips = [];
-        ['all', 'customer', 'partner', 'claim'].forEach(c => {
-          document.getElementById('chip-' + c).classList.toggle('active', c === 'all');
-        });
-      } else {
-        const idx = selectedChips.indexOf(type);
-        if (idx > -1) selectedChips.splice(idx, 1);
-        else selectedChips.push(type);
-        document.getElementById('chip-all').classList.toggle('active', selectedChips.length === 0);
-        ['customer', 'partner', 'claim'].forEach(c => {
-          document.getElementById('chip-' + c).classList.toggle('active', selectedChips.includes(c));
-        });
-      }
-    }
-
-    function getEntityFilter() { return selectedChips.length ? selectedChips : null; }
-
-    // ── Mode tabs ─────────────────────────────────────────────────────────────
-    let isNlqMode = false;
-    function toggleNLQ() {
-      isNlqMode = !isNlqMode;
-      searchMode = isNlqMode ? 'nlq' : 'hybrid';
-      document.getElementById('mtab-nlq').classList.toggle('active', isNlqMode);
-      document.getElementById('nlq-hint').style.display = isNlqMode ? 'block' : 'none';
-      const placeholder = isNlqMode
-        ? 'Describe what you want, e.g. "recent escalated claims for VIP customers"'
-        : 'Search customers, partners, claims...';
-      document.getElementById('global-search-input').placeholder = placeholder;
-      runAllSearch();
-    }
-
-    // ── Live Search ───────────────────────────────────────────────────────────
-    function onSearchInput(val) {
-      clearTimeout(searchTimeout);
-      if (val.trim().length === 0) {
-        document.getElementById('global-results').innerHTML = '';
-        // Cancel any in-flight NLQ request immediately on clear
-        if (controllers['/search/nlq']) controllers['/search/nlq'].abort();
-        return;
-      }
-      // NLQ debounce: 600ms (GPT-4o is expensive); hybrid: 300ms
-      const delay = searchMode === 'nlq' ? 600 : 300;
-      searchTimeout = setTimeout(() => runAllSearch(), delay);
-    }
-
-    function onSearchKey(e) {
-      if (e.key === 'Enter') {
-        clearTimeout(searchTimeout);
-        runAllSearch();
-      }
-    }
-
-    // ── Search execution ──────────────────────────────────────────────────────
-    async function runAllSearch() {
-      const query = document.getElementById('global-search-input').value.trim();
-      if (!query) {
-        document.getElementById('global-results').innerHTML = '';
-        return;
-      }
-      addLog('INFO', `Search [${searchMode}]: "${query}"`);
-
-      const resultsEl = document.getElementById('global-results');
-      resultsEl.innerHTML = `<div class="loading-row"><span class="spinner"></span> Running ${searchMode} search...</div>`;
-
-      const ef = getEntityFilter();
-
-      if (searchMode === 'hybrid') {
-        await runSingleMode('hybrid', query, ef, resultsEl);
-      } else if (searchMode === 'nlq') {
-        await runNLQ(query, ef, resultsEl);
-      }
-    }
-
-    async function runSingleMode(mode, query, ef, container) {
-      const endpoint = '/search/hybrid';
-      const body = { query, entity_types: ef, size: 10, lexical_weight: 0.7, semantic_weight: 0.3 };
-      const [data, ms] = await timedPost(endpoint, body);
-      if (data.stale) return;
-      const results = data?.results || [];
-      const methodClass = `method-${mode}`;
-      const html = `
-    <div class="results-section">
-      <div class="section-header">
-        <span class="section-title">Hybrid (BM25 + Semantic)</span>
-        <span class="method-tag ${methodClass}">${mode}</span>
-        <span class="section-count">${results.length} results</span>
-        <span class="section-latency">&#9201; ${ms}ms</span>
-      </div>
-      ${renderCards(results, mode)}
+function showSkeleton(mode, count = 3) {
+  const modeLabel = mode === 'nlq' ? 'natural language query' : 'hybrid search';
+  const el = document.getElementById('gs-results');
+  el.innerHTML = `
+    <div class="sk-searching">
+      <span class="spinner"></span>
+      Running ${modeLabel}…
+    </div>
+    <div class="sk-wrap">
+      ${Array.from({length: count}, skeletonCard).join('')}
     </div>`;
-      container.innerHTML = html;
-    }
+}
 
-    async function runNLQ(query, ef, container) {
-      const [data, ms] = await timedPost('/search/nlq', { query, entity_types: ef, size: 10 });
-      if (data.stale) return;
-      const results = data?.results || [];
-      const genQ = data?.generated_query;
-      const html = `
-    <div class="results-section">
-      <div id="nlq-hint" class="notice mb-16">
-          NLQ Output: ${data?.summary}
-        </div>
-      <div class="section-header">
-        <span class="section-title">Natural Language Query</span>
-        <span class="method-tag method-nlq">GPT-4o → OpenSearch</span>
-        <span class="section-count">${results.length} results</span>
-        <span class="section-latency">&#9201; ${ms}ms</span>
-      </div>
-      ${genQ ? `<details><summary>&#128270; View generated OpenSearch DSL</summary><pre class="code-block">${esc(genQ)}</pre></details>` : ''}
-      <div style="margin-top:12px;">${renderCards(results, 'nlq')}</div>
-    </div>`;
-      container.innerHTML = html;
-    }
+/* ── tabs ── */
+function switchTab(t) {
+  ['search','entities','index','logs'].forEach(x => {
+    document.getElementById('tab-'+x).classList.toggle('active', x===t);
+  });
+  document.querySelectorAll('.sb-item').forEach((el,i)=>{
+    el.classList.toggle('active', ['search','entities','index','logs'][i]===t);
+  });
+  if(t==='entities') loadBrowser(1);
+  if(t==='index') loadIndexStats();
+  if(t==='logs') renderLogs();
+}
 
-    // ── Card rendering ────────────────────────────────────────────────────────
-    function renderCards(results, method) {
-      if (!results.length) return `<div class="empty-state"><div class="empty-icon">&#128270;</div><div class="empty-text">No results found</div></div>`;
-      return results.map(r => renderCard(r, method)).join('');
-    }
+/* ── entity chips ── */
+function toggleChip(type) {
+  if(type==='all'){chips=[];['all','customer','partner','claim'].forEach(c=>{const el=document.getElementById('chip-'+c);if(el)el.classList.toggle('on',c==='all')});return}
+  const i=chips.indexOf(type);if(i>-1)chips.splice(i,1);else chips.push(type);
+  document.getElementById('chip-all').classList.toggle('on',chips.length===0);
+  ['customer','partner','claim'].forEach(c=>{document.getElementById('chip-'+c).classList.toggle('on',chips.includes(c))});
+}
+function getFilter(){return chips.length?chips:null}
 
-    function renderCard(r, method) {
-      const et = r.entity_type || 'unknown';
-      const initials = (r.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-      const statusClass = getStatusClass(r.status);
-      const methodClass = `method-${method}`;
-      const methodLabel = { hybrid: 'Hybrid', nlq: 'NLQ' }[method] || method;
+/* ── search mode ── */
+function setMode(m){
+  searchMode=m;
+  document.querySelectorAll('.mtab').forEach((el,i)=>el.classList.toggle('active',['hybrid','nlq'][i]===m));
+  document.getElementById('gs-input').placeholder=m==='nlq'?'Describe what you\'re looking for in plain English…':'Search customers, partners, claims…';
+  const pill=document.getElementById('tb-mode-pill');
+  pill.textContent=m==='nlq'?'NLQ':'Hybrid';
+  pill.className='method-tag '+(m==='nlq'?'mt-nlq':'mt-hybrid');
+}
 
-      const meta = [];
-      if (r.email) meta.push(`<span class="meta-item"><span class="meta-label">Email</span>${esc(r.email)}</span>`);
-      if (r.plan_name) meta.push(`<span class="meta-item"><span class="meta-label">Plan</span>${esc(r.plan_name)}</span>`);
-      if (r.quality_index != null) meta.push(`<span class="meta-item"><span class="meta-label">QI</span>${r.quality_index}</span>`);
-      if (r.escalation_count) meta.push(`<span class="meta-item"><span class="meta-label">Escalations</span>${r.escalation_count}</span>`);
-      if (r.is_active != null) meta.push(`<span class="meta-item"><span class="meta-label">Active</span>${r.is_active ? 'Yes' : 'No'}</span>`);
-      if (r.city) meta.push(`<span class="meta-item"><span class="meta-label">City</span>${esc(r.city)}</span>`);
-      if (r.province) meta.push(`<span class="meta-item"><span class="meta-label">Province</span>${esc(r.province)}</span>`);
-      if (r.amount != null) meta.push(`<span class="meta-item"><span class="meta-label">Amount</span>$${Number(r.amount).toFixed(2)}</span>`);
+/* ── search input ─────────────────────────────────────────────
+   KEY CHANGE: show skeleton immediately on every keystroke so
+   the area is never empty while the debounce timer is ticking.
+   ─────────────────────────────────────────────────────────── */
+function onSearchInput(v){
+  clearTimeout(searchTimer);
+  if(!v.trim()){
+    document.getElementById('gs-results').innerHTML='';
+    return;
+  }
+  /* Show skeleton right away — blocks any stale/empty content */
+  showSkeleton(searchMode);
+  searchTimer = setTimeout(()=>runSearch(), searchMode==='nlq' ? 700 : 320);
+}
 
-      return `
-    <div class="result-card">
-      <div class="card-header">
-        <div class="entity-icon icon-${et}">${initials}</div>
-        <div style="flex:1; min-width:0;">
-          <div class="card-name">${esc(r.name || r.reference || '#' + r.entity_id)}</div>
-          <div class="card-ref">${esc(r.reference || '')} ${r.entity_id ? '· ID: ' + r.entity_id : ''}</div>
-        </div>
-        <div class="card-badges">
-          <span class="suggest-badge badge-${et}">${et}</span>
-          ${r.status ? `<span class="status-pill ${statusClass}">${esc(r.status)}</span>` : ''}
-        </div>
-      </div>
-      ${meta.length ? `<div class="card-meta">${meta.join('')}</div>` : ''}
-      ${r.description ? `<div class="card-desc">${esc(r.description)}</div>` : ''}
-      <div class="card-footer">
-        <span class="method-tag ${methodClass}">${methodLabel}</span>
-        <span class="score-pill">score: ${(r.score || 0).toFixed(4)}</span>
-        ${r.created_at ? `<span class="score-pill">${r.created_at.slice(0, 10)}</span>` : ''}
-      </div>
-    </div>`;
-    }
+/* ── HTTP helpers ── */
+async function post(ep, body){
+  if(controllers[ep]) controllers[ep].abort();
+  controllers[ep]=new AbortController();
+  reqIds[ep]=(reqIds[ep]||0)+1;
+  const rid=reqIds[ep], t0=performance.now();
+  try{
+    const r=await fetch(API+ep,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:controllers[ep].signal});
+    const ms=Math.round(performance.now()-t0);
+    if(!r.ok){const txt=await r.text();log('ERROR',`${ep} → ${r.status}: ${txt.slice(0,80)}`);return[{results:[],total:0},ms]}
+    const d=await r.json();
+    if(rid!==reqIds[ep]){return[{results:[],total:0,stale:true},ms]}
+    log('DEBUG',`${ep} → ${ms}ms · ${d.total||0} results`);
+    return[d,ms];
+  }catch(e){
+    const ms=Math.round(performance.now()-t0);
+    if(e.name==='AbortError') return[{results:[],total:0},ms];
+    log('ERROR',`${ep} failed: ${e.message}`);
+    return[{results:[],total:0},ms];
+  }
+}
 
-    function getStatusClass(s) {
-      if (!s) return '';
-      const l = s.toLowerCase();
-      if (l.includes('open')) return 'status-open';
-      if (l.includes('closed')) return 'status-closed';
-      if (l.includes('cancel')) return 'status-cancelled';
-      if (l.includes('review') || l.includes('progress')) return 'status-review';
-      if (l === 'active') return 'status-active';
-      if (l === 'inactive') return 'status-inactive';
-      return '';
-    }
+/* ── run search ───────────────────────────────────────────────
+   KEY CHANGE: showSkeleton() before the await, replacing the
+   old plain spinner. Skeleton persists until data arrives.
+   ─────────────────────────────────────────────────────────── */
+async function runSearch(){
+  const q=document.getElementById('gs-input').value.trim();
+  if(!q){document.getElementById('gs-results').innerHTML='';return}
+  log('INFO',`Search [${searchMode}]: "${q}"`);
 
-    // ── Entity Browser ────────────────────────────────────────────────────────
-    function switchEntity(type) {
-      currentEntity = type;
-      ['customer', 'partner', 'claim'].forEach(e => {
-        document.getElementById('etab-' + e).classList.toggle('active', e === type);
-      });
-      const f2 = document.getElementById('browser-filter2');
-      if (type === 'claim') {
-        f2.innerHTML = `<option value="">All reviews</option><option>Passed</option><option>Pending</option><option>QA_Review</option>`;
-      } else if (type === 'partner') {
-        f2.innerHTML = `<option value="">All types</option><option value="provider">Provider</option><option value="supplier">Supplier</option>`;
-      } else {
-        f2.innerHTML = `<option value="">All reviews</option><option>Approved</option><option>Pending</option><option>Flagged</option>`;
-      }
-      document.getElementById('browser-search-input').value = '';
-      loadEntityBrowser(1);
-    }
+  /* Skeleton blocks the results pane completely */
+  showSkeleton(searchMode);
 
-    function clearBrowser() {
-      document.getElementById('browser-search-input').value = '';
-      document.getElementById('browser-filter1').value = '';
-      document.getElementById('browser-filter2').value = '';
-      loadEntityBrowser(1);
-    }
+  const ef=getFilter();
+  if(searchMode==='hybrid'){
+    const[d,ms]=await post('/search/hybrid',{query:q,entity_types:ef,size:12});
+    if(d.stale) return;
+    document.getElementById('gs-results').innerHTML=renderResultsSection(d?.results||[],ms,'hybrid',null);
+  } else {
+    const[d,ms]=await post('/search/nlq',{query:q,entity_types:ef,size:12});
+    if(d.stale) return;
+    document.getElementById('gs-results').innerHTML=renderResultsSection(d?.results||[],ms,'nlq',d?.generated_query,d?.summary);
+  }
+}
 
-    async function loadEntityBrowser(page) {
-      browserPage = page;
-      const search = document.getElementById('browser-search-input').value.trim();
-      const filter1 = document.getElementById('browser-filter1').value;
-      const filter2 = document.getElementById('browser-filter2').value;
-      const container = document.getElementById('entity-browser-results');
-      container.innerHTML = `<div class="loading-row"><span class="spinner"></span> Loading ${currentEntity}s from OpenSearch</div>`;
-
-      const params = new URLSearchParams({ page, page_size: PAGE_SIZE });
-      if (search) params.set('search', search);
-      if (filter1) params.set('status', filter1);
-      if (filter2) {
-        if (currentEntity === 'partner') params.set('type', filter2);
-        else if (filter2) params.set('review', filter2);
-      }
-
-      const t0 = performance.now();
-      try {
-        const res = await fetch(`${API}/entities/${currentEntity}s?${params}`);
-        const ms = Math.round(performance.now() - t0);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        addLog('DEBUG', `GET /entities/${currentEntity}s → ${ms}ms, ${data.total} rows`);
-        renderBrowserTable(data, ms);
-      } catch (e) {
-        addLog('ERROR', `Entity browser failed: ${e.message}`);
-        container.innerHTML = `<div class="empty-state"><div class="empty-icon">&#9888;</div><div class="empty-text">Failed to load: ${esc(e.message)}</div></div>`;
-      }
-    }
-
-    function renderBrowserTable(data, ms) {
-      const { total, page, page_size, results, entity_type } = data;
-      const container = document.getElementById('entity-browser-results');
-      const totalPages = Math.ceil(total / page_size);
-      const from = (page - 1) * page_size + 1;
-      const to = Math.min(page * page_size, total);
-
-      if (!results.length) {
-        container.innerHTML = `<div class="empty-state"><div class="empty-icon">&#128270;</div><div class="empty-text">No ${entity_type}s found</div></div>`;
-        document.getElementById('entity-pagination').innerHTML = '';
-        return;
-      }
-
-      const cols = getEntityCols(entity_type);
-      const notice = `<div style="font-size:12px;color:var(--text3);margin-bottom:8px;">
-    Showing ${from}–${to} of <strong style="color:var(--text2)">${total}</strong> ${entity_type}s · ${ms}ms · live from PostgreSQL
+/* ── render results ── */
+function renderResultsSection(results,ms,mode,genQ,summary){
+  const hdr=`<div class="sec-hdr">
+    <span class="sec-title">${mode==='nlq'?'Natural language query':'Hybrid search'}</span>
+    <span class="method-tag mt-${mode}">${mode}</span>
+    <span class="sec-count">${results.length} result${results.length!==1?'s':''}</span>
+    <span class="sec-ms">⏱ ${ms}ms</span>
   </div>`;
-      const table = `
-    <div style="overflow-x:auto;">
-    <table class="data-table">
-      <thead><tr>${cols.map(c => `<th>${c.label}</th>`).join('')}</tr></thead>
-      <tbody>${results.map(r => `<tr>${cols.map(c => `<td class="${c.cls || ''}">${esc(getField(r, c.key))}</td>`).join('')}</tr>`).join('')}</tbody>
-    </table></div>`;
-      container.innerHTML = notice + table;
+  const nlqInfo=summary?`<div class="notice" style="margin-bottom:12px">${esc(summary)}</div>`:'';
+  const dsl=genQ?`<details><summary>View generated OpenSearch DSL</summary><pre class="dsl-block">${esc(genQ)}</pre></details>`:'';
+  if(!results.length) return hdr+nlqInfo+dsl+emptyState('No results found for this query');
+  return hdr+nlqInfo+dsl+`<div style="margin-top:${dsl?'10px':'0'}">${results.map(r=>renderCard(r,mode)).join('')}</div>`;
+}
 
-      const pg = document.getElementById('entity-pagination');
-      if (totalPages <= 1) { pg.innerHTML = ''; return; }
-      let btns = `<span class="page-info">${from}–${to} of ${total}</span>`;
-      btns += `<button class="btn btn-sm" ${page <= 1 ? 'disabled' : ''} onclick="loadEntityBrowser(${page - 1})">&#8592; Prev</button>`;
-      const start = Math.max(1, page - 2), end = Math.min(totalPages, page + 2);
-      for (let p = start; p <= end; p++) {
-        btns += `<button class="btn btn-sm ${p === page ? 'btn-primary' : ''}" onclick="loadEntityBrowser(${p})">${p}</button>`;
-      }
-      btns += `<button class="btn btn-sm" ${page >= totalPages ? 'disabled' : ''} onclick="loadEntityBrowser(${page + 1})">Next &#8594;</button>`;
-      pg.innerHTML = btns;
-    }
+/* ── card renderer ── */
+function renderCard(r,mode){
+  const et=r.entity_type||'unknown';
+  const entityId=r.entity_id!==undefined?r.entity_id:r.id;
+  const init=(r.name||r.customer_name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const et_label={customer:'Customer',partner:'Partner',claim:'Claim'}[et]||et;
 
-    function getEntityCols(et) {
-      if (et === 'customer') return [
-        { label: 'Name', key: 'name', cls: 'name-cell' },
-        { label: 'Email', key: 'email' },
-        { label: 'Status', key: 'status' },
-        { label: 'Note', key: 'note' },
-        { label: 'Created', key: 'created_at' },
-      ];
-      if (et === 'partner') return [
-        { label: 'Name', key: 'name', cls: 'name-cell' },
-        { label: 'Email', key: 'email' },
-        { label: 'Created', key: 'created_at' },
-      ];
-      if (et === 'claim') return [
-        { label: 'Reference', key: 'reference', cls: 'name-cell' },
-        { label: 'Description', key: 'description' },
-        { label: 'Status', key: 'status' },
-        { label: 'City', key: 'city' },
-        { label: 'Created', key: 'created_at' },
-      ];
-      return [];
-    }
+  let fields='', footExtra='';
 
-    function getField(r, key) {
-      const v = r[key];
-      if (v === null || v === undefined) return '—';
-      if (typeof v === 'boolean') return v ? 'Yes' : 'No';
-      if ((key === 'created_at' || key === 'start_time' || key === 'end_time') && v) return v.slice(0, 10);
-      if (key === 'description' && v) return v.length > 55 ? v.slice(0, 55) + '…' : v;
-      if (key === 'note' && v) return v.length > 40 ? v.slice(0, 40) + '…' : v;
-      if (key === 'plan_amount' && v) return '$' + Number(v).toFixed(2);
-      if (key === 'quality_index' && v) return Number(v).toFixed(1);
-      return String(v);
-    }
+  if(et==='customer'){
+    fields = fsec('Personal & Contact', 'var(--cust)', [
+      fg('Email', r.email || '—', 'mono'),
+      fg('Phone', r.phone || '—', 'mono'),
+      fg('City', r.city || '—'),
+      fg('Province', r.province || '—'),
+      fg('Contact', r.preferred_contact || '—')
+    ]) + fsec('Plan Details', 'var(--ok)', [
+      fg('Plan Name', r.plan_name || r.plan_type || '—'),
+      fg('Plan Number', r.plan_number || '—', 'mono')
+    ]) + fsec('Claim Data', 'var(--clm)', [
+      fg('Total Claims', `<b>${r.total_claims||0}</b>`),
+      fg('Amount', `$${fmt2(r.total_claim_amount)} / $${fmt2(r.limit_of_liability)}`),
+      fg('Repeat Claimer', r.is_repeat_claimer ? 'Yes' : 'No', r.is_repeat_claimer ? 'err' : 'ok'),
+      fg('View Claims', `<a class="link" onclick="showCustomerClaims('${entityId}', '${esc(r.name).replace(/'/g, "\\'")}')">View all claims →</a>`)
+    ]) + fsec('AI Categories', 'var(--accent)', [
+      fgTags('Tags', r.claim_categories)
+    ]) + `<div class="sem-text">${esc(r.summary_text||'No summary available')}</div>`;
+  }
 
-    // ── Index Management ──────────────────────────────────────────────────────
-    async function loadIndexStats() {
-      document.getElementById('stat-api').textContent = 'Checking...';
-      try {
-        const res = await fetch('http://localhost:8000/health');
-        const d = await res.json();
-        document.getElementById('stat-api').textContent = d.status === 'ok' ? '&#9899; Online' : '&#9888; Degraded';
-        document.getElementById('stat-api').style.color = d.status === 'ok' ? 'var(--success)' : 'var(--warn)';
-      } catch {
-        document.getElementById('stat-api').textContent = '&#10007; Offline';
-        document.getElementById('stat-api').style.color = 'var(--danger)';
-      }
+  if(et==='partner'){
+    fields = fsec('Partner Details', 'var(--part)', [
+      fg('Role', (r.is_provider ? 'Provider ' : '') + (r.is_supplier ? 'Supplier' : '') || '—'),
+      fg('Email', r.email || '—', 'mono'),
+      fg('Phone', r.phone || '—', 'mono'),
+      fg('Status', r.review_status || '—'),
+      fg('Provinces', (r.coverage_provinces||[]).join(', ') || '—')
+    ]) + fsec('Performance', 'var(--accent)', [
+      fg('Tier', r.ai_performance_tier || '—'),
+      fg('Quality Index', fmt2(r.quality_index)+'/5.0', r.quality_index<3?'err':'ok'),
+      fg('Reliability', Math.round((r.ai_reliability_score||0)*100)+'%'),
+      fg('Success Rate', Math.round((r.success_rate||0)*100)+'%'),
+      fg('Claims Handled', r.total_claims_handled || 0)
+    ]) + `<div class="sem-text">${esc(r.summary_text||'No summary available')}</div>`;
+  }
 
-      for (const et of ['customer', 'partner', 'claim']) {
-        try {
-          const [d] = await timedPost('/search/fuzzy', { query: 'a', entity_types: [et], size: 1 });
-          if (et === 'customer') document.getElementById('stat-customers').textContent = d?.total ?? '-';
-          if (et === 'partner') document.getElementById('stat-partners').textContent = d?.total ?? '-';
-          if (et === 'claim') document.getElementById('stat-claims').textContent = d?.total ?? '-';
-        } catch { }
-      }
+  if(et==='claim'){
+    const dec=r.ai_coverage_decision||'';
+    fields = fsec('Claim Details', 'var(--clm)', [
+      fg('Reported', fmtDate(r.reported_date || r.created_at)),
+      fg('Status', statusBadge(r.status)),
+      fg('Priority', priorityBadge(r.priority)),
+      fg('Escalated', r.is_escalated ? 'Yes' : 'No', r.is_escalated ? 'err' : 'ok')
+    ]) + fsec('Customer & Product', 'var(--cust)', [
+      fg('Customer', `<a class="link" onclick="showCustomerDetails('${r.customer_id}')">${esc(r.customer_name||'View Customer')}</a>`),
+      fg('Province', r.customer_province || r.province || '—'),
+      fg('Product', r.product_name || '—'),
+      fg('Category', r.product_category || '—')
+    ]) + fsec('Financials', 'var(--ok)', [
+      fg('Claim Amount', '$'+fmt2(r.claim_amount || r.amount)),
+      fg('Approved Amount', '$'+fmt2(r.approved_amount))
+    ]) + fsec('AI Decision', 'var(--accent)', [
+      fg('Coverage', `<span class="ebadge eb-${dec||'unknown'}">${dec||'—'}</span>`),
+      fg('Issue Type', r.issue_type || '—')
+    ]) + `<div class="sem-text">${esc(r.summary_text||r.ai_coverage_reasoning||r.description||'No reasoning provided')}</div>`;
+  }
 
-      try {
-        const [d] = await timedPost('/search/fuzzy', { query: 'a', entity_types: null, size: 1 });
-        document.getElementById('stat-docs').textContent = d?.total ?? '-';
-      } catch { }
-    }
+  return `<div class="ecard ${et}">
+    <div class="ecard-head">
+      <div class="etype-icon ei-${et}">${init}</div>
+      <div style="flex:1;min-width:0">
+        <div class="ecard-title">${esc(r.name||r.reference||'#'+entityId)}</div>
+        <div class="ecard-ref">${r.reference?esc(r.reference)+' · ':''} id:${entityId||'—'}</div>
+      </div>
+      <div class="ecard-badges">
+        ${r.is_active!==undefined ? `<div class="ebadge ${r.is_active?'eb-covered':'eb-denied'}">${r.is_active?'Active':'Inactive'}</div>` : ''}
+      </div>
+    </div>
+    <div class="field-grid">${fields}</div>
+    <div class="ecard-foot">
+      <span class="method-tag mt-${mode}">${mode}</span>
+      ${r.score!==undefined ? `<span class="score-pill">score: ${(r.score||0).toFixed(4)}</span>` : ''}
+      ${r.created_at?`<span class="score-pill">${r.created_at.slice(0,10)}</span>`:''}
+      ${r.indexed_at?`<span class="score-pill">indexed ${r.indexed_at.slice(0,10)}</span>`:''}
+    </div>
+  </div>`;
+}
 
-    async function triggerSync() {
-      appendIndexLog('INFO', 'Triggering manual sync...');
-      setNotice('index', 'info', 'Syncing... this may take a moment.');
-      try {
-        const res = await fetch(`${API}/search/index/sync`, { method: 'POST' });
-        const d = await res.json();
-        appendIndexLog('INFO', 'Sync complete: ' + JSON.stringify(d.stats || {}));
-        setNotice('index', 'success', 'Sync complete! ' + JSON.stringify(d.stats || {}));
-        loadIndexStats();
-      } catch (e) {
-        appendIndexLog('ERROR', 'Sync failed: ' + e.message);
-        setNotice('index', 'danger', 'Sync failed: ' + e.message);
-      }
-    }
+/* ── expand toggle ── */
+function toggleExpand(id){
+  const tog=document.getElementById('tog-'+id), body=document.getElementById('body-'+id);
+  if(!tog||!body) return;
+  const open=body.classList.contains('open');
+  tog.classList.toggle('open',!open);
+  body.classList.toggle('open',!open);
+}
 
-    async function triggerReset() {
-      if (!confirm('This will drop and recreate the entire index. All indexed data will be deleted. Continue?')) return;
-      appendIndexLog('WARN', 'Resetting index...');
-      setNotice('index', 'warn', 'Resetting index and rebuilding — this may take several minutes.');
-      try {
-        const res = await fetch(`${API}/search/index/reset`, { method: 'POST' });
-        const d = await res.json();
-        appendIndexLog('INFO', 'Reset complete: ' + JSON.stringify(d.stats || {}));
-        setNotice('index', 'success', 'Index reset and synced. ' + JSON.stringify(d.stats || {}));
-        loadIndexStats();
-      } catch (e) {
-        appendIndexLog('ERROR', 'Reset failed: ' + e.message);
-        setNotice('index', 'danger', 'Reset failed: ' + e.message);
-      }
-    }
+/* ── field helpers ── */
+function fg(label, val, cls='', full=false){
+  return `<div class="field-row${full?' full':''}"><div class="fl">${label}</div><div class="fv ${cls}">${val}</div></div>`;
+}
+function fgTags(label, tags, danger=false){
+  if(!tags||!tags.length) return '';
+  const items=tags.map(t=>`<span class="tag"${danger?' style="color:var(--danger)"':''}>${esc(t)}</span>`).join('');
+  return `<div class="field-row full"><div class="fl">${label}</div><div class="tag-list">${items}</div></div>`;
+}
+function fsec(title, dotColor, rows){
+  const inner=rows.filter(Boolean).join('');
+  if(!inner.trim()) return '';
+  return `<div class="fsec"><div class="fsec-hdr"><span class="fsec-dot" style="background:${dotColor}"></span><span class="fsec-title">${title}</span></div><div class="fsec-grid">${inner}</div></div>`;
+}
 
-    function appendIndexLog(level, msg) {
-      const el = document.getElementById('index-log');
-      const time = new Date().toLocaleTimeString();
-      const cls = level === 'ERROR' ? 'log-error' : level === 'WARN' ? 'log-warn' : 'log-info';
-      el.innerHTML += `<div class="log-line"><span class="log-time">${time}</span><span class="log-level ${cls}">${level}</span><span class="log-msg">${esc(msg)}</span></div>`;
-      el.scrollTop = el.scrollHeight;
-    }
+/* ── badge helpers ── */
+function sentBadge(s){
+  if(!s) return '—';
+  const cls=s==='positive'?'eb-covered':s==='frustrated'||s==='negative'?'eb-denied':'eb-neutral';
+  return `<span class="ebadge ${cls}">${esc(s)}</span>`;
+}
+function statusBadge(s){
+  if(!s) return '—';
+  const m={new:'eb-covered',in_triage:'eb-partial',in_progress:'eb-partial',resolved:'eb-covered',denied:'eb-denied',closed:'eb-neutral'};
+  return `<span class="ebadge ${m[s]||'eb-neutral'}">${esc(s)}</span>`;
+}
+function priorityBadge(p){
+  if(!p) return '—';
+  const m={urgent:'eb-denied',high:'eb-partial',normal:'eb-neutral',low:'eb-neutral'};
+  return `<span class="ebadge ${m[p]||'eb-neutral'}">${esc(p)}</span>`;
+}
 
-    function setNotice(tab, type, msg) {
-      const el = document.getElementById(tab + '-notice');
-      if (!el) return;
-      const cls = type === 'danger' ? 'notice-danger' : type === 'warn' ? 'notice-warn' : type === 'success' ? 'notice-success' : '';
-      el.innerHTML = `<div class="notice ${cls}" style="margin-bottom:16px;">${esc(msg)}</div>`;
-    }
+/* ── entity browser ── */
+function switchEntity(type){
+  currentEntity=type;
+  ['customer','partner','claim'].forEach(e=>{document.getElementById('etab-'+e).classList.toggle('active',e===type)});
+  bSort='asc';document.getElementById('sort-btn').textContent='↑ ID asc';
+  document.getElementById('b-search').value='';
+  document.getElementById('b-f1').value='';document.getElementById('b-f2').value='';
+  loadBrowser(1);
+}
+function toggleSort(){
+  bSort=bSort==='asc'?'desc':'asc';
+  document.getElementById('sort-btn').textContent=bSort==='desc'?'↓ ID desc':'↑ ID asc';
+  loadBrowser(1);
+}
 
-    // ── Logs ──────────────────────────────────────────────────────────────────
-    function addLog(level, msg) {
-      const time = new Date().toLocaleTimeString();
-      logLines.push({ time, level, msg });
-      if (logLines.length > 200) logLines.shift();
-      if (document.getElementById('tab-logs').classList.contains('active')) renderLogs();
-    }
+async function loadBrowser(page){
+  bPage=page;
+  const search=document.getElementById('b-search').value.trim();
+  const f1=document.getElementById('b-f1').value;
+  const f2=document.getElementById('b-f2').value;
+  const el=document.getElementById('b-results');
+  el.innerHTML=`<div class="loading-row"><span class="spinner"></span> Loading ${currentEntity}s…</div>`;
+  const params=new URLSearchParams({page,page_size:15,order:bSort});
+  if(search) params.set('search',search);
+  if(f1) params.set('status',f1);
+  if(f2) params.set(currentEntity==='partner'?'type':'review_status',f2);
+  const t0=performance.now();
+  try{
+    const r=await fetch(`${API}/entities/${currentEntity}s?${params}`);
+    const ms=Math.round(performance.now()-t0);
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    log('DEBUG',`GET /entities/${currentEntity}s → ${ms}ms · ${d.total} rows`);
+    renderBrowser(d,ms);
+  }catch(e){
+    log('ERROR',`Browser: ${e.message}`);
+    el.innerHTML=emptyState('Failed to load: '+esc(e.message));
+  }
+}
 
-    function renderLogs() {
-      const el = document.getElementById('log-terminal');
-      if (!logLines.length) {
-        el.innerHTML = `<div class="log-line"><span class="log-msg" style="color:var(--text3);">No logs yet. Run a search to see activity.</span></div>`;
-        return;
-      }
-      el.innerHTML = logLines.map(l => {
-        const cls = l.level === 'ERROR' ? 'log-error' : l.level === 'WARN' ? 'log-warn' : l.level === 'DEBUG' ? 'log-debug' : 'log-info';
-        return `<div class="log-line"><span class="log-time">${l.time}</span><span class="log-level ${cls}">${l.level}</span><span class="log-msg">${esc(l.msg)}</span></div>`;
-      }).join('');
-      el.scrollTop = el.scrollHeight;
-    }
+function renderBrowser(data, ms){
+  const {total,page,page_size,results,entity_type}=data;
+  const el=document.getElementById('b-results');
+  if(!results||!results.length){el.innerHTML=emptyState('No results');document.getElementById('b-pages').innerHTML='';return}
+  const cols=getBrowserCols(entity_type||currentEntity);
+  const from=(page-1)*page_size+1, to=Math.min(page*page_size,total);
+  const info=`<div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:var(--mono)">
+    ${from}–${to} of <strong style="color:var(--text2)">${total}</strong> ${entity_type||currentEntity}s · ${ms}ms</div>`;
+  const hdr=cols.map(c=>`<th>${c.label}</th>`).join('');
+  const rows=results.map(r=>`<tr>${cols.map(c=>`<td class="${c.cls||''}">${esc(getF(r,c.key))}</td>`).join('')}</tr>`).join('');
+  el.innerHTML=info+`<div class="dtable-wrap"><table class="dtable"><thead><tr>${hdr}</tr></thead><tbody>${rows}</tbody></table></div>`;
+  const totalPages=Math.ceil(total/page_size);
+  const pg=document.getElementById('b-pages');
+  if(totalPages<=1){pg.innerHTML='';return}
+  let btns=`<span class="pg-info">${from}–${to} of ${total}</span>`;
+  btns+=`<button class="btn sm" ${page<=1?'disabled':''} onclick="loadBrowser(${page-1})">← Prev</button>`;
+  const s=Math.max(1,page-2),e2=Math.min(totalPages,page+2);
+  for(let p=s;p<=e2;p++) btns+=`<button class="btn sm ${p===page?'primary':''}" onclick="loadBrowser(${p})">${p}</button>`;
+  btns+=`<button class="btn sm" ${page>=totalPages?'disabled':''} onclick="loadBrowser(${page+1})">Next →</button>`;
+  pg.innerHTML=btns;
+}
 
-    function clearLogs() { logLines = []; renderLogs(); }
+function getBrowserCols(et){
+  if(et==='customer') return [
+    {label:'Name',key:'name',cls:'nm'},{label:'Email',key:'email',cls:'mono'},
+    {label:'City',key:'city'},{label:'Province',key:'province'},
+    {label:'Plan',key:'plan_type'},{label:'Plan #',key:'plan_number',cls:'mono'},
+    {label:'Claims',key:'total_claims'},{label:'Repeat',key:'is_repeat_claimer'},
+    {label:'Active',key:'is_active'},{label:'Preferred',key:'preferred_contact'},
+    {label:'Indexed',key:'indexed_at'},
+  ];
+  if(et==='partner') return [
+    {label:'Name',key:'name',cls:'nm'},{label:'Email',key:'email',cls:'mono'},
+    {label:'Provider',key:'is_provider'},{label:'Supplier',key:'is_supplier'},
+    {label:'Status',key:'review_status'},{label:'Tier',key:'ai_performance_tier'},
+    {label:'QI',key:'quality_index'},{label:'Reliability',key:'ai_reliability_score'},
+    {label:'Success %',key:'success_rate'},{label:'Handled',key:'total_claims_handled'},
+    {label:'Provinces',key:'coverage_provinces'},{label:'Indexed',key:'indexed_at'},
+  ];
+  if(et==='claim') return [
+    {label:'Reference',key:'reference',cls:'nm mono'},{label:'Customer',key:'customer_name'},
+    {label:'Product',key:'product_name'},{label:'Category',key:'product_category'},
+    {label:'Issue',key:'issue_type'},{label:'Status',key:'status'},
+    {label:'Priority',key:'priority'},{label:'Decision',key:'ai_coverage_decision'},
+    {label:'Claim $',key:'claim_amount'},{label:'Approved $',key:'approved_amount'},
+    {label:'Escalated',key:'is_escalated'},{label:'Province',key:'customer_province'},
+    {label:'Indexed',key:'indexed_at'},
+  ];
+  return [];
+}
 
-    function toggleAutoRefresh() {
-      const btn = document.getElementById('auto-refresh-btn');
-      if (autoRefreshTimer) {
-        clearInterval(autoRefreshTimer);
-        autoRefreshTimer = null;
-        btn.textContent = '▶ Auto-refresh';
-        btn.classList.remove('btn-primary');
+function getF(r,key){
+  const v=r[key];
+  if(v===null||v===undefined) return '—';
+  if(typeof v==='boolean') return v?'Yes':'No';
+  if((key==='indexed_at'||key==='created_at'||key==='updated_at')&&v) return v.slice(0,10);
+  if((key==='ai_reliability_score'||key==='success_rate')&&typeof v==='number') return Math.round(v*100)+'%';
+  if(key==='quality_index'&&typeof v==='number') return v.toFixed(1);
+  if((key==='claim_amount'||key==='approved_amount')&&typeof v==='number') return '$'+v.toFixed(2);
+  if(Array.isArray(v)) return v.slice(0,3).join(', ')+(v.length>3?'…':'');
+  if(typeof v==='string'&&v.length>40) return v.slice(0,40)+'…';
+  return String(v);
+}
+
+/* ── index management ── */
+async function loadIndexStats(){
+  document.getElementById('s-api').textContent='Checking…';
+  try{const r=await fetch('http://localhost:8000/health');const d=await r.json();
+    document.getElementById('s-api').textContent=d.status==='ok'?'● Online':'⚠ Degraded';
+    document.getElementById('s-api').style.color=d.status==='ok'?'var(--ok)':'var(--warn)';
+    document.getElementById('api-dot').className='sb-dot'+(d.status==='ok'?'':' warn');
+    document.getElementById('api-status-txt').textContent=d.status==='ok'?'API online':'API degraded';
+  }catch{
+    document.getElementById('s-api').textContent='✗ Offline';
+    document.getElementById('s-api').style.color='var(--danger)';
+    document.getElementById('api-dot').className='sb-dot off';
+    document.getElementById('api-status-txt').textContent='API offline';
+  }
+  for(const et of['customer','partner','claim']){
+    try{const[d]=await post('/search/hybrid',{query:'a',entity_types:[et],size:1});
+      const id={customer:'s-cust',partner:'s-part',claim:'s-clm'}[et];
+      document.getElementById(id).textContent=(d?.total||0).toLocaleString();
+    }catch{}
+  }
+  try{const[d]=await post('/search/hybrid',{query:'a',entity_types:null,size:1});
+    document.getElementById('s-total').textContent=(d?.total||0).toLocaleString();
+  }catch{}
+}
+
+function idxLog(level,msg){
+  const el=document.getElementById('idx-log');
+  const cls={INFO:'li',WARN:'lw',ERROR:'le',DEBUG:'ld'}[level]||'li';
+  el.innerHTML+=`<div class="log-line"><span class="lt">${new Date().toLocaleTimeString()}</span><span class="ll ${cls}">${level}</span><span class="lm">${esc(msg)}</span></div>`;
+  el.scrollTop=el.scrollHeight;
+}
+function setIdxNotice(type,msg){
+  document.getElementById('idx-notice').innerHTML=`<div class="notice" style="margin-bottom:14px">${esc(msg)}</div>`;
+}
+
+async function triggerSync(){
+  idxLog('INFO','Triggering incremental sync…');
+  setIdxNotice('info','Syncing…');
+  try{const r=await fetch(`${API}/search/index/sync`,{method:'POST'});const d=await r.json();
+    idxLog('INFO','Sync complete: '+JSON.stringify(d.stats||{}));
+    setIdxNotice('success','Sync complete. '+JSON.stringify(d.stats||{}));
+    loadIndexStats();
+  }catch(e){idxLog('ERROR','Sync failed: '+e.message);setIdxNotice('danger','Sync failed: '+e.message)}
+}
+async function triggerReset(){
+  if(!confirm('Drop and recreate the horizon_v2 index? All indexed data will be deleted.')) return;
+  idxLog('WARN','Resetting index…');
+  setIdxNotice('warn','Resetting — this may take several minutes.');
+  try{const r=await fetch(`${API}/search/index/reset`,{method:'POST'});const d=await r.json();
+    idxLog('INFO','Reset complete: '+JSON.stringify(d.stats||{}));
+    setIdxNotice('success','Index reset and synced. '+JSON.stringify(d.stats||{}));
+    loadIndexStats();
+  }catch(e){idxLog('ERROR','Reset failed: '+e.message);setIdxNotice('danger','Reset failed: '+e.message)}
+}
+
+/* ── logs ── */
+function log(level,msg){
+  logs.push({t:new Date().toLocaleTimeString(),level,msg});
+  if(logs.length>200) logs.shift();
+  if(document.getElementById('tab-logs').classList.contains('active')) renderLogs();
+}
+function renderLogs(){
+  const el=document.getElementById('log-terminal');
+  if(!logs.length){el.innerHTML=`<div class="log-line"><span class="lm" style="color:#44495e">No logs yet — run a search to see activity.</span></div>`;return}
+  el.innerHTML=logs.map(l=>{
+    const cls={INFO:'li',WARN:'lw',ERROR:'le',DEBUG:'ld'}[l.level]||'li';
+    return `<div class="log-line"><span class="lt">${l.t}</span><span class="ll ${cls}">${l.level}</span><span class="lm">${esc(l.msg)}</span></div>`;
+  }).join('');
+  el.scrollTop=el.scrollHeight;
+}
+function clearLogs(){logs=[];renderLogs()}
+function toggleAutoRefresh(){
+  const btn=document.getElementById('ar-btn');
+  if(arTimer){clearInterval(arTimer);arTimer=null;btn.textContent='▶ Auto-refresh';btn.classList.remove('primary')}
+  else{
+    arTimer=setInterval(async()=>{
+      try{const r=await fetch('http://localhost:8000/health');const d=await r.json();log('DEBUG','Health: '+JSON.stringify(d))}
+      catch(e){log('WARN','Health poll failed: '+e.message)}
+    },10000);
+    btn.textContent='⏹ Stop';btn.classList.add('primary');log('INFO','Auto-refresh active (10s)');
+  }
+}
+
+/* ── helpers ── */
+function emptyState(msg){return`<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><div>${esc(msg)}</div></div>`}
+function esc(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function fmtDate(v){if(!v)return'—';return String(v).slice(0,10)}
+function fmt2(v){return v!=null?Number(v).toFixed(2):'0.00'}
+function fmt1(v){return v!=null?Number(v).toFixed(1):'0.0'}
+function fmt0(v){return v!=null?Math.round(Number(v)).toString():'0'}
+
+/* ── init ── */
+(async()=>{
+  log('INFO','Horizon v2 UI initialized');
+  log('INFO','Backend: '+API);
+  try{const r=await fetch('http://localhost:8000/health');const d=await r.json();
+    document.getElementById('api-dot').className='sb-dot'+(d.status==='ok'?'':' warn');
+    document.getElementById('api-status-txt').textContent=d.status==='ok'?'API online':'API degraded';
+    log('INFO','Health check: '+JSON.stringify(d));
+  }catch{
+    document.getElementById('api-dot').className='sb-dot off';
+    document.getElementById('api-status-txt').textContent='API offline';
+    log('WARN','API unreachable on startup');
+  }
+})();
+
+  /* ── RELATIONAL MODAL ── */
+  function openModal(title, html) {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-body').innerHTML = html;
+    document.getElementById('rel-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    document.getElementById('rel-modal').classList.remove('open');
+    document.body.style.overflow = '';
+    setTimeout(() => { document.getElementById('modal-body').innerHTML = ''; }, 200);
+  }
+
+  async function showCustomerDetails(customerId) {
+    openModal('Customer Details', '<div style="padding:40px;text-align:center;color:var(--text3)">Loading...</div>');
+    try {
+      const res = await fetch(`${API}/entities/customers?entity_id=${customerId}`);
+      const data = await res.json();
+      if (data.results && data.results.length > 0) {
+        const cardHtml = renderCard(data.results[0], 'modal');
+        openModal(`Customer: ${data.results[0].name}`, cardHtml);
       } else {
-        autoRefreshTimer = setInterval(async () => {
-          try {
-            const res = await fetch('http://localhost:8000/health');
-            const d = await res.json();
-            addLog('DEBUG', `Health poll: ${JSON.stringify(d)}`);
-          } catch (e) {
-            addLog('WARN', 'Health poll failed: ' + e.message);
-          }
-        }, 10000);
-        btn.textContent = '⏹ Stop refresh';
-        btn.classList.add('btn-primary');
-        addLog('INFO', 'Auto-refresh started (10s interval)');
+        openModal('Error', emptyState('Customer not found in index.'));
       }
+    } catch(e) {
+      openModal('Error', emptyState('Failed to fetch customer.'));
     }
+  }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
-    function esc(s) {
-      if (s === null || s === undefined) return '';
-      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  async function showCustomerClaims(customerId, customerName) {
+    openModal('Customer Claims', '<div style="padding:40px;text-align:center;color:var(--text3)">Loading...</div>');
+    try {
+      const res = await fetch(`${API}/entities/claims?customer_id=${customerId}`);
+      const data = await res.json();
+      if (data.results && data.results.length > 0) {
+        const cardsHtml = data.results.map(r => renderCard(r, 'modal')).join('');
+        openModal(`Claims for ${customerName}`, cardsHtml);
+      } else {
+        openModal(`Claims for ${customerName}`, emptyState('No claims found for this customer.'));
+      }
+    } catch(e) {
+      openModal('Error', emptyState('Failed to fetch claims.'));
     }
-
-    // ── Init ──────────────────────────────────────────────────────────────────
-    addLog('INFO', 'Horizon Search UI initialized');
-    addLog('INFO', `Backend: ${API}`);
-  </script>
-
-
+  }
+</script>
 </body>
-
 </html>
