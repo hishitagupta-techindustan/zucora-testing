@@ -139,6 +139,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .method-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.4px;font-family:var(--mono)}
 .mt-hybrid{background:rgba(194,122,16,.12);color:var(--clm)}
 .mt-nlq{background:rgba(214,60,60,.1);color:var(--danger)}
+.mt-lexical{background:rgba(14,158,118,.12);color:var(--ok)}
 .mt-vector{background:rgba(79,70,229,.1);color:var(--accent)}
 
 /* ── ENTITY CARD ── */
@@ -149,9 +150,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .ecard.clm{border-left:3px solid var(--clm)}
 .ecard-head{display:flex;align-items:flex-start;gap:12px;padding:14px 16px 11px}
 .etype-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:13px;font-weight:700;flex-shrink:0;letter-spacing:-.3px}
-.ei-cust{background:var(--cust-bg);color:var(--cust)}
-.ei-part{background:var(--part-bg);color:var(--part)}
-.ei-clm{background:var(--clm-bg);color:var(--clm)}
+.ei-cust,.ei-customer{background:var(--cust-bg);color:var(--cust)}
+.ei-part,.ei-partner{background:var(--part-bg);color:var(--part)}
+.ei-clm,.ei-claim{background:var(--clm-bg);color:var(--clm)}
 .ecard-title{font-size:14px;font-weight:600;color:var(--text);line-height:1.3}
 .ecard-ref{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
 .ecard-badges{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-left:auto;flex-shrink:0}
@@ -183,6 +184,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .fv.ok{color:var(--ok)}
 .fv.warn{color:var(--warn)}
 .fv.err{color:var(--danger)}
+.fl-toggle{cursor:pointer;display:flex;align-items:center;gap:5px;user-select:none}
+.fl-chev{font-size:9px;transition:transform .15s}
+.fl-chev.open{transform:rotate(180deg)}
+.fv-collapsed{display:none}
+.fv-collapsed.open{display:block}
 
 /* ── FIELD SECTIONS ── */
 /* Each section = a labelled block that resets the grid */
@@ -194,18 +200,26 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
   background:var(--bg2);
   border-bottom:1px solid var(--border);
   position:sticky; /* visually anchors section title */
+  cursor:pointer;
+  user-select:none;
 }
 .fsec-title{
   font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
   font-family:var(--mono);color:var(--text3);
 }
 .fsec-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.fsec-chevron{
+  margin-left:auto;font-size:9px;color:var(--text3);
+  transition:transform .15s;
+}
+.fsec-chevron.open{transform:rotate(180deg)}
 .fsec-grid{
-  display:grid;
+  display:none;
   grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
   gap:0;
   padding:0 16px;
 }
+.fsec-grid.open{display:grid}
 /* tag rows inside sections span full width */
 .fsec-grid .field-row.full{grid-column:1/-1}
 /* alternating section tint — every second section gets a barely-there bg */
@@ -214,6 +228,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 /* Tags */
 .tag-list{display:flex;gap:4px;flex-wrap:wrap;margin-top:2px}
 .tag{font-size:10px;padding:2px 7px;border-radius:3px;background:var(--bg3);color:var(--text2);font-family:var(--mono);border:1px solid var(--border)}
+mark.hl{background:rgba(230,180,20,.35);color:inherit;padding:0 1px;border-radius:2px}
 
 /* Expand */
 .ecard-expand{border-top:1px solid var(--border);padding:0 16px}
@@ -448,20 +463,20 @@ hr.div{border:none;border-top:1.5px solid var(--border);margin:18px 0}
   </div>
   <nav class="sb-nav">
     <div class="sb-sec">Search</div>
-    <div class="sb-item active" onclick="switchTab('search')">
+    <div class="sb-item active" data-tab="search" onclick="switchTab('search')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       Global Search
     </div>
-    <!-- <div class="sb-item" onclick="switchTab('entities')">
+    <div class="sb-item" data-tab="entities" onclick="switchTab('entities')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       Entity Browser
     </div>
-    <div class="sb-sec">System</div>
+    <!-- <div class="sb-sec">System</div>
     <div class="sb-item" onclick="switchTab('index')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       Index Management
     </div> -->
-    <div class="sb-item" onclick="switchTab('logs')">
+    <div class="sb-item" data-tab="logs" onclick="switchTab('logs')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 10h16M4 14h10M4 18h7"/></svg>
       Logs
     </div>
@@ -506,8 +521,9 @@ hr.div{border:none;border-top:1.5px solid var(--border);margin:18px 0}
     </div>
 
     <div class="mode-tabs">
-      <span class="mtab active" onclick="setMode('hybrid')">Hybrid (BM25 + Vector)</span>
-      <span class="mtab" onclick="setMode('nlq')">Natural Language (GPT-4o)</span>
+      <span class="mtab" data-mode="lexical" onclick="setMode('lexical')">Lexical Only (no embeddings)</span>
+      <span class="mtab active" data-mode="hybrid" onclick="setMode('hybrid')">Hybrid (BM25 + Vector)</span>
+      <span class="mtab" data-mode="nlq" onclick="setMode('nlq')">Natural Language (GPT-4o)</span>
     </div>
 
     <div id="gs-results"></div>
@@ -524,13 +540,6 @@ hr.div{border:none;border-top:1.5px solid var(--border);margin:18px 0}
       <div class="etab active" id="etab-customer" onclick="switchEntity('customer')">Customers</div>
       <div class="etab" id="etab-partner" onclick="switchEntity('partner')">Partners</div>
       <div class="etab" id="etab-claim" onclick="switchEntity('claim')">Claims</div>
-    </div>
-    <div class="browser-controls">
-      <input class="b-input" id="b-search" type="text" placeholder="Search name, email, reference…" onkeydown="if(event.key==='Enter') loadBrowser(1)"/>
-      <select class="b-select" id="b-f1" onchange="loadBrowser(1)"><option value="">All statuses</option><option>active</option><option>suspended</option><option>probation</option></select>
-      <select class="b-select" id="b-f2" onchange="loadBrowser(1)"><option value="">All decisions</option><option>covered</option><option>partial</option><option>denied</option></select>
-      <button class="btn sm" id="sort-btn" onclick="toggleSort()">↑ ID asc</button>
-      <button class="btn sm primary" onclick="loadBrowser(1)">Apply</button>
     </div>
     <div id="b-results"></div>
     <div class="pagination" id="b-pages"></div>
@@ -604,7 +613,8 @@ hr.div{border:none;border-top:1.5px solid var(--border);margin:18px 0}
 <script>
 const API = 'https://ai.dev.horizon.ths.agency/api';
 let chips = [], searchMode = 'hybrid', searchTimer = null;
-let currentEntity = 'customer', bPage = 1, bSort = 'asc';
+let lastSearchQuery = '';
+let currentEntity = 'customer', bPage = 1;
 let logs = [], arTimer = null;
 const controllers = {}, reqIds = {};
 
@@ -642,7 +652,7 @@ function skeletonCard() {
 }
 
 function showSkeleton(mode, count = 3) {
-  const modeLabel = mode === 'nlq' ? 'natural language query' : 'hybrid search';
+  const modeLabel = ({nlq:'natural language query',lexical:'lexical search'})[mode] || 'hybrid search';
   const el = document.getElementById('gs-results');
   el.innerHTML = `
     <div class="sk-searching">
@@ -656,11 +666,12 @@ function showSkeleton(mode, count = 3) {
 
 /* ── tabs ── */
 function switchTab(t) {
-  ['search','entities','index','logs'].forEach(x => {
-    document.getElementById('tab-'+x).classList.toggle('active', x===t);
+  ['search','entities','index','logs','duplicates'].forEach(x => {
+    const el = document.getElementById('tab-'+x);
+    if(el) el.classList.toggle('active', x===t);
   });
-  document.querySelectorAll('.sb-item').forEach((el,i)=>{
-    el.classList.toggle('active', ['search','entities','index','logs'][i]===t);
+  document.querySelectorAll('.sb-item[data-tab]').forEach(el=>{
+    el.classList.toggle('active', el.dataset.tab===t);
   });
   if(t==='entities') loadBrowser(1);
   if(t==='index') loadIndexStats();
@@ -679,11 +690,17 @@ function getFilter(){return chips.length?chips:null}
 /* ── search mode ── */
 function setMode(m){
   searchMode=m;
-  document.querySelectorAll('.mtab').forEach((el,i)=>el.classList.toggle('active',['hybrid','nlq'][i]===m));
-  document.getElementById('gs-input').placeholder=m==='nlq'?'Describe what you\'re looking for in plain English…':'Search customers, partners, claims…';
+  document.querySelectorAll('.mtab').forEach(el=>el.classList.toggle('active',el.dataset.mode===m));
+  const placeholders={
+    lexical:'Search customers, partners, claims — no embeddings, fastest path…',
+    hybrid:'Search customers, partners, claims…',
+    nlq:'Describe what you\'re looking for in plain English…',
+  };
+  document.getElementById('gs-input').placeholder=placeholders[m]||placeholders.hybrid;
+  const labels={lexical:'Lexical',hybrid:'Hybrid',nlq:'NLQ'};
   const pill=document.getElementById('tb-mode-pill');
-  pill.textContent=m==='nlq'?'NLQ':'Hybrid';
-  pill.className='method-tag '+(m==='nlq'?'mt-nlq':'mt-hybrid');
+  pill.textContent=labels[m]||'Hybrid';
+  pill.className='method-tag mt-'+m;
 }
 
 /* ── search input ─────────────────────────────────────────────
@@ -729,6 +746,7 @@ async function post(ep, body){
    ─────────────────────────────────────────────────────────── */
 async function runSearch(){
   const q=document.getElementById('gs-input').value.trim();
+  lastSearchQuery = q;
   if(!q){document.getElementById('gs-results').innerHTML='';return}
   log('INFO',`Search [${searchMode}]: "${q}"`);
 
@@ -736,21 +754,22 @@ async function runSearch(){
   showSkeleton(searchMode);
 
   const ef=getFilter();
-  if(searchMode==='hybrid'){
-    const[d,ms]=await post('/search/hybrid',{query:q,entity_types:ef,size:12});
-    if(d.stale) return;
-    document.getElementById('gs-results').innerHTML=renderResultsSection(d?.results||[],ms,'hybrid',null);
-  } else {
+  if(searchMode==='nlq'){
     const[d,ms]=await post('/search/nlq',{query:q,entity_types:ef,size:12});
     if(d.stale) return;
     document.getElementById('gs-results').innerHTML=renderResultsSection(d?.results||[],ms,'nlq',d?.generated_query,d?.summary);
+  } else {
+    const ep = searchMode==='lexical' ? '/search/lexical' : '/search/hybrid';
+    const[d,ms]=await post(ep,{query:q,entity_types:ef,size:12});
+    if(d.stale) return;
+    document.getElementById('gs-results').innerHTML=renderResultsSection(d?.results||[],ms,searchMode,null);
   }
 }
 
 /* ── render results ── */
 function renderResultsSection(results,ms,mode,genQ,summary){
   const hdr=`<div class="sec-hdr">
-    <span class="sec-title">${mode==='nlq'?'Natural language query':'Hybrid search'}</span>
+    <span class="sec-title">${({nlq:'Natural language query',lexical:'Lexical search'})[mode]||'Hybrid search'}</span>
     <span class="method-tag mt-${mode}">${mode}</span>
     <span class="sec-count">${results.length} result${results.length!==1?'s':''}</span>
     <span class="sec-ms">⏱ ${ms}ms</span>
@@ -758,7 +777,30 @@ function renderResultsSection(results,ms,mode,genQ,summary){
   const nlqInfo=summary?`<div class="notice" style="margin-bottom:12px">${esc(summary)}</div>`:'';
   const dsl=genQ?`<details><summary>View generated OpenSearch DSL</summary><pre class="dsl-block">${esc(genQ)}</pre></details>`:'';
   if(!results.length) return hdr+nlqInfo+dsl+emptyState('No results found for this query');
-  return hdr+nlqInfo+dsl+`<div style="margin-top:${dsl?'10px':'0'}">${results.map(r=>renderCard(r,mode)).join('')}</div>`;
+  return hdr+nlqInfo+dsl+`<div style="margin-top:${dsl?'10px':'0'}">${renderGroupedResults(results,mode)}</div>`;
+}
+
+/* Groups mixed-entity-type results into labeled sections, always in this
+   fixed order — customers first, then claims, then partners — instead of
+   one flat list interleaved purely by score. Each group keeps its own
+   internal relevance order. */
+function renderGroupedResults(results, mode){
+  const order=['customer','claim','partner'];
+  const labels={customer:'Customers',claim:'Claims',partner:'Partners'};
+  const groups={};
+  results.forEach(r=>{
+    const et=r.entity_type||'unknown';
+    (groups[et]=groups[et]||[]).push(r);
+  });
+  const types=[...order.filter(t=>groups[t]), ...Object.keys(groups).filter(t=>!order.includes(t))];
+  if(types.length<=1) return results.map(r=>renderCard(r,mode)).join('');
+  return types.map(et=>{
+    const items=groups[et];
+    return `<div class="sec-hdr" style="margin-top:16px">
+      <span class="sec-title">${labels[et]||et}</span>
+      <span class="sec-count">${items.length} result${items.length!==1?'s':''}</span>
+    </div>` + items.map(r=>renderCard(r,mode)).join('');
+  }).join('');
 }
 
 /* ── card renderer ── */
@@ -772,67 +814,96 @@ function renderCard(r,mode){
 
   if(et==='customer'){
     fields = fsec('Personal & Contact', 'var(--cust)', [
-      fg('Email', r.email || '—', 'mono'),
-      fg('Phone', r.phone || '—', 'mono'),
-      fg('City', r.city || '—'),
-      fg('Province', r.province || '—'),
-      fg('Contact', r.preferred_contact || '—')
-    ]) + fsec('Plan Details', 'var(--ok)', [
-      fg('Plan Name', r.plan_name || r.plan_type || '—'),
-      fg('Plan Number', r.plan_number || '—', 'mono')
+      fg('Email', hl(esc(r.email)) || '—', 'mono'),
+      fg('Phone', hl(esc(r.phone)) || '—', 'mono'),
+      fg('City', hl(esc(r.city)) || '—'),
+      fg('Province', hl(esc(r.province)) || '—'),
+      fg('Language', r.language || '—')
+    ], true) + fsec('Plan Details', 'var(--ok)', [
+      fg('Plan Type', hl(esc(r.plan_type)) || '—'),
+      fg('Plan Code', hl(esc(r.plan_code)) || '—', 'mono'),
+      fg('Plan Number', hl(esc(r.plan_number)) || '—', 'mono'),
+      fg('Retailer', hl(esc(r.retailer)) || '—'),
+      fg('Purchased', fmtDate(r.purchase_date)),
+      fg('Plan Start', fmtDate(r.plan_start_date)),
+      fg('Plan End', fmtDate(r.plan_end_date)),
+      fg('Total LOL Amount', '$'+fmt2(r.limit_of_liability)),
+      fg('Consumed LOL Amount', '$'+fmt2(r.liability_consumed))
     ]) + fsec('Claim Data', 'var(--clm)', [
       fg('Total Claims', `<b>${r.total_claims||0}</b>`),
-      fg('Amount', `$${fmt2(r.total_claim_amount)} / $${fmt2(r.limit_of_liability)}`),
-      fg('Repeat Claimer', r.is_repeat_claimer ? 'Yes' : 'No', r.is_repeat_claimer ? 'err' : 'ok'),
-      fg('View Claims', `<a class="link" onclick="showCustomerClaims('${entityId}', '${esc(r.name).replace(/'/g, "\\'")}')">View all claims →</a>`)
-    ]) + fsec('AI Categories', 'var(--accent)', [
-      fgTags('Tags', r.claim_categories)
-    ]) + `<div class="sem-text">${esc(r.summary_text||'No summary available')}</div>`;
+      fg('View Claims', `<a class="link" onclick="showCustomerClaims('${entityId}', '${esc(r.name).replace(/'/g, "\\'")}')">View all claims →</a>`),
+      fgTags('Categories', r.claim_categories),
+      fgTags('Issue Types', r.claim_issue_types)
+    ]) + fsec('Partners', 'var(--part)', [
+      fgTags('Associated Partners', r.associated_partner_names)
+    ]) + fsec('Record', 'var(--text3)', [
+      fg('Created', fmtDate(r.created_at)),
+      fg('Updated', fmtDate(r.updated_at))
+    ]);
   }
 
   if(et==='partner'){
     fields = fsec('Partner Details', 'var(--part)', [
-      fg('Role', (r.is_provider ? 'Provider ' : '') + (r.is_supplier ? 'Supplier' : '') || '—'),
-      fg('Email', r.email || '—', 'mono'),
-      fg('Phone', r.phone || '—', 'mono'),
+      fg('Role', ((r.is_provider ? 'Provider ' : '') + (r.is_supplier ? 'Supplier' : '')).trim() || '—'),
+      fg('Email', hl(esc(r.email)) || '—', 'mono'),
+      fg('Phone', hl(esc(r.phone)) || '—', 'mono'),
       fg('Status', r.review_status || '—'),
-      fg('Provinces', (r.coverage_provinces||[]).join(', ') || '—')
-    ]) + fsec('Performance', 'var(--accent)', [
+      fg('Coverage Radius', r.coverage_radius_km ? fmt0(r.coverage_radius_km)+' km' : '—'),
+      fg('View Claims', `<a class="link" onclick="showPartnerClaims('${entityId}', '${esc(r.name).replace(/'/g, "\\'")}')">View all claims →</a>`),
+      fg('View Customers', `<a class="link" onclick="showPartnerCustomers('${entityId}', '${esc(r.name).replace(/'/g, "\\'")}')">View all customers →</a>`)
+    ], true) + fsec('Performance', 'var(--accent)', [
       fg('Tier', r.ai_performance_tier || '—'),
       fg('Quality Index', fmt2(r.quality_index)+'/5.0', r.quality_index<3?'err':'ok'),
       fg('Reliability', Math.round((r.ai_reliability_score||0)*100)+'%'),
-      fg('Success Rate', Math.round((r.success_rate||0)*100)+'%'),
       fg('Claims Handled', r.total_claims_handled || 0)
-    ]) + `<div class="sem-text">${esc(r.summary_text||'No summary available')}</div>`;
+    ]) + fsec('Specialization & History', 'var(--clm)', [
+      fgTags('Handled Categories', r.handled_categories),
+      fgTags('Served Regions', r.served_customer_regions)
+    ]) + fsec('Record', 'var(--text3)', [
+      fg('Created', fmtDate(r.created_at)),
+      fg('Updated', fmtDate(r.updated_at))
+    ]) + `<div class="sem-text">${hl(esc(r.summary_text||'No summary available'))}</div>`;
   }
 
   if(et==='claim'){
     const dec=r.ai_coverage_decision||'';
     fields = fsec('Claim Details', 'var(--clm)', [
-      fg('Reported', fmtDate(r.reported_date || r.created_at)),
+      fg('Reference', hl(esc(r.reference)) || '—', 'mono'),
       fg('Status', statusBadge(r.status)),
-      fg('Priority', priorityBadge(r.priority)),
-      fg('Escalated', r.is_escalated ? 'Yes' : 'No', r.is_escalated ? 'err' : 'ok')
-    ]) + fsec('Customer & Product', 'var(--cust)', [
+      fg('Progress', r.progress_status || '—'),
+      fg('Channel', r.channel || '—'),
+      fg('Reported', fmtDate(r.reported_date)),
+      fg('Resolved', fmtDate(r.resolution_date)),
+      fg('Escalated', r.is_escalated ? `Yes (${r.escalation_count||0})` : 'No', r.is_escalated ? 'err' : 'ok')
+    ], true) + fsec('Customer & Product', 'var(--cust)', [
       fg('Customer', `<a class="link" onclick="showCustomerDetails('${r.customer_id}')">${esc(r.customer_name||'View Customer')}</a>`),
-      fg('Province', r.customer_province || r.province || '—'),
-      fg('Product', r.product_name || '—'),
-      fg('Category', r.product_category || '—')
+      fg('Province', hl(esc(r.province)) || '—'),
+      fg('Plan', hl(esc([r.plan_type, r.plan_code, r.plan_number].filter(Boolean).join(' · '))) || '—'),
+      fg('Product', hl(esc(r.product_name)) || '—'),
+      fg('Category', hl(esc(r.product_category)) || '—'),
+      fg('Issue Type', hl(esc(r.issue_type)) || '—'),
+      fgToggle('Issue Description', hl(esc(r.issue_description)))
     ]) + fsec('Financials', 'var(--ok)', [
-      fg('Claim Amount', '$'+fmt2(r.claim_amount || r.amount)),
+      fg('Claim Amount', '$'+fmt2(r.claim_amount)),
       fg('Approved Amount', '$'+fmt2(r.approved_amount))
     ]) + fsec('AI Decision', 'var(--accent)', [
       fg('Coverage', `<span class="ebadge eb-${dec||'unknown'}">${dec||'—'}</span>`),
-      fg('Issue Type', r.issue_type || '—')
-    ]) + `<div class="sem-text">${esc(r.summary_text||r.ai_coverage_reasoning||r.description||'No reasoning provided')}</div>`;
+      fg('Confidence', r.ai_coverage_confidence ? Math.round(r.ai_coverage_confidence*100)+'%' : '—'),
+      fg('Reasoning', hl(esc(r.ai_coverage_reasoning)) || '—', '', true)
+    ]) + fsec('Partners', 'var(--part)', [
+      fgTags('Assigned Partners', r.partner_names)
+    ]) + fsec('Record', 'var(--text3)', [
+      fg('Created', fmtDate(r.created_at)),
+      fg('Updated', fmtDate(r.updated_at))
+    ]) + `<div class="sem-text">${hl(esc(r.summary_text||r.ai_coverage_reasoning||'No reasoning provided'))}</div>`;
   }
 
   return `<div class="ecard ${et}">
     <div class="ecard-head">
       <div class="etype-icon ei-${et}">${init}</div>
       <div style="flex:1;min-width:0">
-        <div class="ecard-title">${esc(r.name||r.reference||'#'+entityId)}</div>
-        <div class="ecard-ref">${r.reference?esc(r.reference)+' · ':''} id:${entityId||'—'}</div>
+        <div class="ecard-title">${hl(esc(r.name||r.reference||'#'+entityId))}</div>
+        <div class="ecard-ref">${r.reference?hl(esc(r.reference))+' · ':''} id:${entityId||'—'}</div>
       </div>
       <div class="ecard-badges">
         ${r.is_active!==undefined ? `<div class="ebadge ${r.is_active?'eb-covered':'eb-denied'}">${r.is_active?'Active':'Inactive'}</div>` : ''}
@@ -844,17 +915,9 @@ function renderCard(r,mode){
       ${r.score!==undefined ? `<span class="score-pill">score: ${(r.score||0).toFixed(4)}</span>` : ''}
       ${r.created_at?`<span class="score-pill">${r.created_at.slice(0,10)}</span>`:''}
       ${r.indexed_at?`<span class="score-pill">indexed ${r.indexed_at.slice(0,10)}</span>`:''}
+      <button class="btn sm" style="margin-left:auto" onclick="checkRecordDuplicates('${et}','${entityId}','${esc(r.name||r.reference||'').replace(/'/g,"\\'")}')">Check Duplicates</button>
     </div>
   </div>`;
-}
-
-/* ── expand toggle ── */
-function toggleExpand(id){
-  const tog=document.getElementById('tog-'+id), body=document.getElementById('body-'+id);
-  if(!tog||!body) return;
-  const open=body.classList.contains('open');
-  tog.classList.toggle('open',!open);
-  body.classList.toggle('open',!open);
 }
 
 /* ── field helpers ── */
@@ -863,13 +926,47 @@ function fg(label, val, cls='', full=false){
 }
 function fgTags(label, tags, danger=false){
   if(!tags||!tags.length) return '';
-  const items=tags.map(t=>`<span class="tag"${danger?' style="color:var(--danger)"':''}>${esc(t)}</span>`).join('');
+  const items=tags.map(t=>`<span class="tag"${danger?' style="color:var(--danger)"':''}>${hl(esc(t))}</span>`).join('');
   return `<div class="field-row full"><div class="fl">${label}</div><div class="tag-list">${items}</div></div>`;
 }
-function fsec(title, dotColor, rows){
+let _fsecSeq = 0;
+function fsec(title, dotColor, rows, expanded=false){
   const inner=rows.filter(Boolean).join('');
   if(!inner.trim()) return '';
-  return `<div class="fsec"><div class="fsec-hdr"><span class="fsec-dot" style="background:${dotColor}"></span><span class="fsec-title">${title}</span></div><div class="fsec-grid">${inner}</div></div>`;
+  const id = 'fsec-' + (_fsecSeq++);
+  return `<div class="fsec">
+    <div class="fsec-hdr" onclick="toggleFsec('${id}')">
+      <span class="fsec-dot" style="background:${dotColor}"></span>
+      <span class="fsec-title">${title}</span>
+      <span class="fsec-chevron${expanded?' open':''}" id="chev-${id}">▾</span>
+    </div>
+    <div class="fsec-grid${expanded?' open':''}" id="${id}">${inner}</div>
+  </div>`;
+}
+function toggleFsec(id){
+  const body=document.getElementById(id), chev=document.getElementById('chev-'+id);
+  if(!body) return;
+  const open=body.classList.toggle('open');
+  if(chev) chev.classList.toggle('open', open);
+}
+
+/* Per-FIELD toggle (finer-grained than fsec — one row, collapsed by default,
+   independent of whether its containing section is expanded). Used for long
+   free-text fields like a claim's Issue Description. */
+let _fldSeq = 0;
+function fgToggle(label, val){
+  if(!val || val==='—') return '';
+  const id = 'fld-' + (_fldSeq++);
+  return `<div class="field-row full">
+    <div class="fl fl-toggle" onclick="toggleField('${id}')">${label} <span class="fl-chev" id="chev-${id}">▾</span></div>
+    <div class="fv fv-collapsed" id="${id}">${val}</div>
+  </div>`;
+}
+function toggleField(id){
+  const body=document.getElementById(id), chev=document.getElementById('chev-'+id);
+  if(!body) return;
+  const open=body.classList.toggle('open');
+  if(chev) chev.classList.toggle('open', open);
 }
 
 /* ── badge helpers ── */
@@ -883,38 +980,18 @@ function statusBadge(s){
   const m={new:'eb-covered',in_triage:'eb-partial',in_progress:'eb-partial',resolved:'eb-covered',denied:'eb-denied',closed:'eb-neutral'};
   return `<span class="ebadge ${m[s]||'eb-neutral'}">${esc(s)}</span>`;
 }
-function priorityBadge(p){
-  if(!p) return '—';
-  const m={urgent:'eb-denied',high:'eb-partial',normal:'eb-neutral',low:'eb-neutral'};
-  return `<span class="ebadge ${m[p]||'eb-neutral'}">${esc(p)}</span>`;
-}
-
 /* ── entity browser ── */
 function switchEntity(type){
   currentEntity=type;
   ['customer','partner','claim'].forEach(e=>{document.getElementById('etab-'+e).classList.toggle('active',e===type)});
-  bSort='asc';document.getElementById('sort-btn').textContent='↑ ID asc';
-  document.getElementById('b-search').value='';
-  document.getElementById('b-f1').value='';document.getElementById('b-f2').value='';
-  loadBrowser(1);
-}
-function toggleSort(){
-  bSort=bSort==='asc'?'desc':'asc';
-  document.getElementById('sort-btn').textContent=bSort==='desc'?'↓ ID desc':'↑ ID asc';
   loadBrowser(1);
 }
 
 async function loadBrowser(page){
   bPage=page;
-  const search=document.getElementById('b-search').value.trim();
-  const f1=document.getElementById('b-f1').value;
-  const f2=document.getElementById('b-f2').value;
   const el=document.getElementById('b-results');
   el.innerHTML=`<div class="loading-row"><span class="spinner"></span> Loading ${currentEntity}s…</div>`;
-  const params=new URLSearchParams({page,page_size:15,order:bSort});
-  if(search) params.set('search',search);
-  if(f1) params.set('status',f1);
-  if(f2) params.set(currentEntity==='partner'?'type':'review_status',f2);
+  const params=new URLSearchParams({page,page_size:15});
   const t0=performance.now();
   try{
     const r=await fetch(`${API}/entities/${currentEntity}s?${params}`);
@@ -937,8 +1014,17 @@ function renderBrowser(data, ms){
   const from=(page-1)*page_size+1, to=Math.min(page*page_size,total);
   const info=`<div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:var(--mono)">
     ${from}–${to} of <strong style="color:var(--text2)">${total}</strong> ${entity_type||currentEntity}s · ${ms}ms</div>`;
-  const hdr=cols.map(c=>`<th>${c.label}</th>`).join('');
-  const rows=results.map(r=>`<tr>${cols.map(c=>`<td class="${c.cls||''}">${esc(getF(r,c.key))}</td>`).join('')}</tr>`).join('');
+  const hdr=cols.map(c=>`<th>${c.label}</th>`).join('')+'<th>Actions</th>';
+  const et=entity_type||currentEntity;
+  const rows=results.map(r=>{
+    const rid=r.id!==undefined?r.id:r.entity_id;
+    const raw=r.name||r.reference||'';
+    const lbl=esc(raw).replace(/'/g,"\\'");
+    return `<tr>${cols.map(c=>`<td class="${c.cls||''}">${esc(getF(r,c.key))}</td>`).join('')}<td>
+      <button class="btn sm primary" onclick="searchThisRecord('${lbl}')">Search</button>
+      <button class="btn sm" onclick="checkRecordDuplicates('${et}','${rid}','${lbl}')">Check Dup</button>
+    </td></tr>`;
+  }).join('');
   el.innerHTML=info+`<div class="dtable-wrap"><table class="dtable"><thead><tr>${hdr}</tr></thead><tbody>${rows}</tbody></table></div>`;
   const totalPages=Math.ceil(total/page_size);
   const pg=document.getElementById('b-pages');
@@ -951,13 +1037,23 @@ function renderBrowser(data, ms){
   pg.innerHTML=btns;
 }
 
+/* Bridges the Entity Browser to Global Search — jump straight from a
+   record you found while browsing to actually searching for it, instead of
+   retyping its name/reference by hand. */
+function searchThisRecord(label){
+  switchTab('search');
+  document.getElementById('gs-input').value = label;
+  clearTimeout(searchTimer);
+  runSearch();
+}
+
 function getBrowserCols(et){
   if(et==='customer') return [
     {label:'Name',key:'name',cls:'nm'},{label:'Email',key:'email',cls:'mono'},
     {label:'City',key:'city'},{label:'Province',key:'province'},
     {label:'Plan',key:'plan_type'},{label:'Plan #',key:'plan_number',cls:'mono'},
     {label:'Claims',key:'total_claims'},{label:'Repeat',key:'is_repeat_claimer'},
-    {label:'Active',key:'is_active'},{label:'Preferred',key:'preferred_contact'},
+    {label:'Active',key:'is_active'},
     {label:'Indexed',key:'indexed_at'},
   ];
   if(et==='partner') return [
@@ -965,14 +1061,13 @@ function getBrowserCols(et){
     {label:'Provider',key:'is_provider'},{label:'Supplier',key:'is_supplier'},
     {label:'Status',key:'review_status'},{label:'Tier',key:'ai_performance_tier'},
     {label:'QI',key:'quality_index'},{label:'Reliability',key:'ai_reliability_score'},
-    {label:'Success %',key:'success_rate'},{label:'Handled',key:'total_claims_handled'},
-    {label:'Provinces',key:'coverage_provinces'},{label:'Indexed',key:'indexed_at'},
+    {label:'Handled',key:'total_claims_handled'},{label:'Indexed',key:'indexed_at'},
   ];
   if(et==='claim') return [
     {label:'Reference',key:'reference',cls:'nm mono'},{label:'Customer',key:'customer_name'},
     {label:'Product',key:'product_name'},{label:'Category',key:'product_category'},
     {label:'Issue',key:'issue_type'},{label:'Status',key:'status'},
-    {label:'Priority',key:'priority'},{label:'Decision',key:'ai_coverage_decision'},
+    {label:'Decision',key:'ai_coverage_decision'},
     {label:'Claim $',key:'claim_amount'},{label:'Approved $',key:'approved_amount'},
     {label:'Escalated',key:'is_escalated'},{label:'Province',key:'customer_province'},
     {label:'Indexed',key:'indexed_at'},
@@ -985,7 +1080,7 @@ function getF(r,key){
   if(v===null||v===undefined) return '—';
   if(typeof v==='boolean') return v?'Yes':'No';
   if((key==='indexed_at'||key==='created_at'||key==='updated_at')&&v) return v.slice(0,10);
-  if((key==='ai_reliability_score'||key==='success_rate')&&typeof v==='number') return Math.round(v*100)+'%';
+  if(key==='ai_reliability_score'&&typeof v==='number') return Math.round(v*100)+'%';
   if(key==='quality_index'&&typeof v==='number') return v.toFixed(1);
   if((key==='claim_amount'||key==='approved_amount')&&typeof v==='number') return '$'+v.toFixed(2);
   if(Array.isArray(v)) return v.slice(0,3).join(', ')+(v.length>3?'…':'');
@@ -1076,9 +1171,95 @@ function toggleAutoRefresh(){
   }
 }
 
+/* ── duplicate detection (per-record, with reasoning) ── */
+async function checkRecordDuplicates(entityType, entityId, label){
+  openModal('Duplicate Check', '<div style="padding:40px;text-align:center;color:var(--text3)">Checking for duplicates…</div>');
+  try{
+    const res = await fetch(`${API}/entities/${entityType}/${entityId}/duplicates`);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    openModal(`Duplicates of ${label||('#'+entityId)}`, renderDuplicateMatches(data));
+  }catch(e){
+    openModal('Error', emptyState('Failed to check for duplicates: '+esc(e.message)));
+  }
+}
+
+function confidenceBadge(score){
+  const pct = Math.round(score*100);
+  const cls = score>=0.75 ? 'eb-denied' : score>=0.5 ? 'eb-partial' : 'eb-neutral';
+  return `<span class="ebadge ${cls}">${pct}% confidence</span>`;
+}
+
+function renderDuplicateMatches(data){
+  const {entity_type, record, matches} = data;
+  const srcLabel = entity_type==='claim'
+    ? `${esc(record.reference||'#'+record.entity_id)} — ${statusBadge(record.status)}`
+    : `${esc(record.name||'#'+record.entity_id)} — ${esc(record.email||record.phone||'')}`;
+  const header = `<div style="margin-bottom:16px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);font-size:12px;color:var(--text2)">
+    Checking <b>${srcLabel}</b> against all other ${esc(entity_type)} records.
+  </div>`;
+
+  if(!matches || !matches.length){
+    return header + emptyState('No likely duplicates found for this record.');
+  }
+
+  const cards = matches.map((m,i)=>{
+    const title = entity_type==='claim'
+      ? `${esc(m.reference||'#'+m.entity_id)} ${m.status?'· '+statusBadge(m.status):''}`
+      : `<a class="link" onclick="showCustomerDetails('${m.entity_id}')">${esc(m.name||'#'+m.entity_id)}</a>`;
+    const rows = (m.reasoning||[]).map(r=>`<tr>
+      <td class="nm">${esc(r.field.replace(/_/g,' '))}</td>
+      <td>${esc(fmtReasonVal(r.record_value))}</td>
+      <td>${esc(fmtReasonVal(r.match_value))}</td>
+      <td class="mono">${Math.round(r.similarity*100)}%</td>
+      <td>${esc(r.match_type.replace(/_/g,' '))}</td>
+      <td class="mono">${r.weight?r.weight:'—'}</td>
+    </tr>`).join('');
+
+    return `<div class="ecard" style="margin-bottom:14px">
+      <div class="ecard-head">
+        <div class="etype-icon ei-${entity_type}">${i+1}</div>
+        <div style="flex:1;min-width:0">
+          <div class="ecard-title">${title}</div>
+          <div class="ecard-ref">id:${m.entity_id}</div>
+        </div>
+        <div class="ecard-badges">${confidenceBadge(m.confidence)}</div>
+      </div>
+      <div class="dtable-wrap" style="margin:12px 14px 14px;width:calc(100% - 28px)">
+        <table class="dtable">
+          <thead><tr><th>Field</th><th>This record</th><th>Match</th><th>Similarity</th><th>Match type</th><th>Weight</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+
+  return header + cards;
+}
+
+function fmtReasonVal(v){
+  if(v===null||v===undefined) return '—';
+  if(typeof v==='string' && /^\d{4}-\d{2}-\d{2}/.test(v)) return fmtDate(v);
+  return v;
+}
+
 /* ── helpers ── */
 function emptyState(msg){return`<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><div>${esc(msg)}</div></div>`}
 function esc(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+/* Wraps occurrences of the last-run search query's tokens in <mark>, so a
+   result's matched text is visually obvious — e.g. searching "stain" bolds
+   "stain" wherever it shows up on the card. Operates on ALREADY-ESCAPED plain
+   text only (call as hl(esc(val))) — never on strings containing real HTML
+   (links, badges), since a match inside markup/attributes would corrupt it. */
+function hl(escapedText){
+  if(!escapedText || !lastSearchQuery) return escapedText;
+  const tokens=[...new Set(lastSearchQuery.split(/\s+/).filter(t=>t.length>=2))]
+    .sort((a,b)=>b.length-a.length)
+    .map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
+  if(!tokens.length) return escapedText;
+  const re=new RegExp('('+tokens.join('|')+')','gi');
+  return escapedText.replace(re,'<mark class="hl">$1</mark>');
+}
 function fmtDate(v){if(!v)return'—';return String(v).slice(0,10)}
 function fmt2(v){return v!=null?Number(v).toFixed(2):'0.00'}
 function fmt1(v){return v!=null?Number(v).toFixed(1):'0.0'}
@@ -1142,6 +1323,38 @@ function fmt0(v){return v!=null?Math.round(Number(v)).toString():'0'}
       }
     } catch(e) {
       openModal('Error', emptyState('Failed to fetch claims.'));
+    }
+  }
+
+  async function showPartnerClaims(partnerId, partnerName) {
+    openModal('Partner Claims', '<div style="padding:40px;text-align:center;color:var(--text3)">Loading...</div>');
+    try {
+      const res = await fetch(`${API}/entities/claims?partner_id=${partnerId}`);
+      const data = await res.json();
+      if (data.results && data.results.length > 0) {
+        const cardsHtml = data.results.map(r => renderCard(r, 'modal')).join('');
+        openModal(`Claims handled by ${partnerName}`, cardsHtml);
+      } else {
+        openModal(`Claims handled by ${partnerName}`, emptyState('No claims found for this partner.'));
+      }
+    } catch(e) {
+      openModal('Error', emptyState('Failed to fetch claims.'));
+    }
+  }
+
+  async function showPartnerCustomers(partnerId, partnerName) {
+    openModal('Partner Customers', '<div style="padding:40px;text-align:center;color:var(--text3)">Loading...</div>');
+    try {
+      const res = await fetch(`${API}/entities/customers?partner_id=${partnerId}`);
+      const data = await res.json();
+      if (data.results && data.results.length > 0) {
+        const cardsHtml = data.results.map(r => renderCard(r, 'modal')).join('');
+        openModal(`Customers served by ${partnerName}`, cardsHtml);
+      } else {
+        openModal(`Customers served by ${partnerName}`, emptyState('No customers found for this partner.'));
+      }
+    } catch(e) {
+      openModal('Error', emptyState('Failed to fetch customers.'));
     }
   }
 </script>
