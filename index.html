@@ -139,7 +139,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .method-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.4px;font-family:var(--mono)}
 .mt-hybrid{background:rgba(194,122,16,.12);color:var(--clm)}
 .mt-nlq{background:rgba(214,60,60,.1);color:var(--danger)}
-.mt-lexical{background:rgba(14,158,118,.12);color:var(--ok)}
 .mt-vector{background:rgba(79,70,229,.1);color:var(--accent)}
 
 /* ── ENTITY CARD ── */
@@ -438,6 +437,18 @@ hr.div{border:none;border-top:1.5px solid var(--border);margin:18px 0}
 .cd-off{background:var(--bg4)}
 .stars{color:var(--warn);font-size:11px;letter-spacing:1px}
 
+/* Relevance confidence meter (segmented bar + %), top-right of a result card.
+   cs-* sets `color` only — the filled segments inherit it via currentColor,
+   so bar and number always agree without repeating the palette. */
+.conf-meter{display:inline-flex;align-items:center;gap:6px;cursor:default;line-height:1}
+.cm-bars{display:inline-flex;gap:2px;align-items:center}
+.cm-seg{width:7px;height:5px;border-radius:1px;background:var(--bg4);flex-shrink:0}
+.cm-seg.on{background:currentColor}
+.cm-num{font-size:11px;font-weight:700;font-family:var(--mono);min-width:32px;text-align:right}
+.cs-high{color:var(--ok)}
+.cs-med{color:var(--clm)}
+.cs-low{color:var(--danger)}
+
 /* ── MODAL ── */
 .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
 .modal-overlay.open{opacity:1;pointer-events:auto}
@@ -521,7 +532,6 @@ hr.div{border:none;border-top:1.5px solid var(--border);margin:18px 0}
     </div>
 
     <div class="mode-tabs">
-      <span class="mtab" data-mode="lexical" onclick="setMode('lexical')">Lexical Only (no embeddings)</span>
       <span class="mtab active" data-mode="hybrid" onclick="setMode('hybrid')">Hybrid (BM25 + Vector)</span>
       <span class="mtab" data-mode="nlq" onclick="setMode('nlq')">Natural Language (GPT-4o)</span>
     </div>
@@ -611,7 +621,7 @@ hr.div{border:none;border-top:1.5px solid var(--border);margin:18px 0}
 </div><!-- /app -->
 
 <script>
-const API = 'https://ai.dev.horizon.ths.agency/api';
+const API = 'http://localhost:8000/api';
 let chips = [], searchMode = 'hybrid', searchTimer = null;
 let lastSearchQuery = '';
 let currentEntity = 'customer', bPage = 1;
@@ -652,7 +662,7 @@ function skeletonCard() {
 }
 
 function showSkeleton(mode, count = 3) {
-  const modeLabel = ({nlq:'natural language query',lexical:'lexical search'})[mode] || 'hybrid search';
+  const modeLabel = mode==='nlq' ? 'natural language query' : 'hybrid search';
   const el = document.getElementById('gs-results');
   el.innerHTML = `
     <div class="sk-searching">
@@ -692,12 +702,11 @@ function setMode(m){
   searchMode=m;
   document.querySelectorAll('.mtab').forEach(el=>el.classList.toggle('active',el.dataset.mode===m));
   const placeholders={
-    lexical:'Search customers, partners, claims — no embeddings, fastest path…',
     hybrid:'Search customers, partners, claims…',
     nlq:'Describe what you\'re looking for in plain English…',
   };
   document.getElementById('gs-input').placeholder=placeholders[m]||placeholders.hybrid;
-  const labels={lexical:'Lexical',hybrid:'Hybrid',nlq:'NLQ'};
+  const labels={hybrid:'Hybrid',nlq:'NLQ'};
   const pill=document.getElementById('tb-mode-pill');
   pill.textContent=labels[m]||'Hybrid';
   pill.className='method-tag mt-'+m;
@@ -757,19 +766,18 @@ async function runSearch(){
   if(searchMode==='nlq'){
     const[d,ms]=await post('/search/nlq',{query:q,entity_types:ef,size:12});
     if(d.stale) return;
-    document.getElementById('gs-results').innerHTML=renderResultsSection(d?.results||[],ms,'nlq',d?.generated_query,d?.summary);
+    document.getElementById('gs-results').innerHTML=renderResultsSection(d?.results||[],ms,'nlq',d?.generated_query,d?.summary,d?.mode);
   } else {
-    const ep = searchMode==='lexical' ? '/search/lexical' : '/search/hybrid';
-    const[d,ms]=await post(ep,{query:q,entity_types:ef,size:12});
+    const[d,ms]=await post('/search/hybrid',{query:q,entity_types:ef,size:12});
     if(d.stale) return;
-    document.getElementById('gs-results').innerHTML=renderResultsSection(d?.results||[],ms,searchMode,null);
+    document.getElementById('gs-results').innerHTML=renderResultsSection(d?.results||[],ms,searchMode,null,null,d?.mode);
   }
 }
 
 /* ── render results ── */
-function renderResultsSection(results,ms,mode,genQ,summary){
+function renderResultsSection(results,ms,mode,genQ,summary,srcMode){
   const hdr=`<div class="sec-hdr">
-    <span class="sec-title">${({nlq:'Natural language query',lexical:'Lexical search'})[mode]||'Hybrid search'}</span>
+    <span class="sec-title">${mode==='nlq'?'Natural language query':'Hybrid search'}</span>
     <span class="method-tag mt-${mode}">${mode}</span>
     <span class="sec-count">${results.length} result${results.length!==1?'s':''}</span>
     <span class="sec-ms">⏱ ${ms}ms</span>
@@ -777,14 +785,15 @@ function renderResultsSection(results,ms,mode,genQ,summary){
   const nlqInfo=summary?`<div class="notice" style="margin-bottom:12px">${esc(summary)}</div>`:'';
   const dsl=genQ?`<details><summary>View generated OpenSearch DSL</summary><pre class="dsl-block">${esc(genQ)}</pre></details>`:'';
   if(!results.length) return hdr+nlqInfo+dsl+emptyState('No results found for this query');
-  return hdr+nlqInfo+dsl+`<div style="margin-top:${dsl?'10px':'0'}">${renderGroupedResults(results,mode)}</div>`;
+  const conf=confContext(results,srcMode);
+  return hdr+nlqInfo+dsl+`<div style="margin-top:${dsl?'10px':'0'}">${renderGroupedResults(results,mode,conf)}</div>`;
 }
 
 /* Groups mixed-entity-type results into labeled sections, always in this
    fixed order — customers first, then claims, then partners — instead of
    one flat list interleaved purely by score. Each group keeps its own
    internal relevance order. */
-function renderGroupedResults(results, mode){
+function renderGroupedResults(results, mode, conf){
   const order=['customer','claim','partner'];
   const labels={customer:'Customers',claim:'Claims',partner:'Partners'};
   const groups={};
@@ -793,24 +802,25 @@ function renderGroupedResults(results, mode){
     (groups[et]=groups[et]||[]).push(r);
   });
   const types=[...order.filter(t=>groups[t]), ...Object.keys(groups).filter(t=>!order.includes(t))];
-  if(types.length<=1) return results.map(r=>renderCard(r,mode)).join('');
+  if(types.length<=1) return results.map(r=>renderCard(r,mode,conf)).join('');
   return types.map(et=>{
     const items=groups[et];
     return `<div class="sec-hdr" style="margin-top:16px">
       <span class="sec-title">${labels[et]||et}</span>
       <span class="sec-count">${items.length} result${items.length!==1?'s':''}</span>
-    </div>` + items.map(r=>renderCard(r,mode)).join('');
+    </div>` + items.map(r=>renderCard(r,mode,conf)).join('');
   }).join('');
 }
 
 /* ── card renderer ── */
-function renderCard(r,mode){
+function renderCard(r,mode,conf){
   const et=r.entity_type||'unknown';
   const entityId=r.entity_id!==undefined?r.entity_id:r.id;
   const init=(r.name||r.customer_name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   const et_label={customer:'Customer',partner:'Partner',claim:'Claim'}[et]||et;
 
   let fields='', footExtra='';
+  const dec=r.ai_coverage_decision||'';
 
   if(et==='customer'){
     fields = fsec('Personal & Contact', 'var(--cust)', [
@@ -866,7 +876,6 @@ function renderCard(r,mode){
   }
 
   if(et==='claim'){
-    const dec=r.ai_coverage_decision||'';
     fields = fsec('Claim Details', 'var(--clm)', [
       fg('Reference', hl(esc(r.reference)) || '—', 'mono'),
       fg('Status', statusBadge(r.status)),
@@ -887,8 +896,6 @@ function renderCard(r,mode){
       fg('Claim Amount', '$'+fmt2(r.claim_amount)),
       fg('Approved Amount', '$'+fmt2(r.approved_amount))
     ]) + fsec('AI Decision', 'var(--accent)', [
-      fg('Coverage', `<span class="ebadge eb-${dec||'unknown'}">${dec||'—'}</span>`),
-      fg('Confidence', r.ai_coverage_confidence ? Math.round(r.ai_coverage_confidence*100)+'%' : '—'),
       fg('Reasoning', hl(esc(r.ai_coverage_reasoning)) || '—', '', true)
     ]) + fsec('Partners', 'var(--part)', [
       fgTags('Assigned Partners', r.partner_names)
@@ -906,7 +913,9 @@ function renderCard(r,mode){
         <div class="ecard-ref">${r.reference?hl(esc(r.reference))+' · ':''} id:${entityId||'—'}</div>
       </div>
       <div class="ecard-badges">
+        ${coverageBadge(dec)}
         ${r.is_active!==undefined ? `<div class="ebadge ${r.is_active?'eb-covered':'eb-denied'}">${r.is_active?'Active':'Inactive'}</div>` : ''}
+        ${confMeter(r.score, conf)}
       </div>
     </div>
     <div class="field-grid">${fields}</div>
@@ -930,7 +939,7 @@ function fgTags(label, tags, danger=false){
   return `<div class="field-row full"><div class="fl">${label}</div><div class="tag-list">${items}</div></div>`;
 }
 let _fsecSeq = 0;
-function fsec(title, dotColor, rows, expanded=false){
+function fsec(title, dotColor, rows, expanded=true){
   const inner=rows.filter(Boolean).join('');
   if(!inner.trim()) return '';
   const id = 'fsec-' + (_fsecSeq++);
@@ -969,11 +978,80 @@ function toggleField(id){
   if(chev) chev.classList.toggle('open', open);
 }
 
+/* ── relevance confidence ──────────────────────────────
+   /search/hybrid is a router across ~11 strategies, and they do NOT share a
+   score scale. Only 'hybrid' and 'hybrid_fallback' run through the l2
+   normalization pipeline (index_definition.py HYBRID_PIPELINE_BODY) that
+   bounds _score to 0-1; the rest return raw BM25 / wildcard / term scores,
+   which are unbounded and query-dependent. The backend already tells us
+   which branch ran via `mode`, so read the score the right way per branch
+   instead of pretending one scale covers all of them:
+
+     hybrid, hybrid_fallback     score is already 0-1  ->  absolute, x100
+     exact_reference, email      the branch only fires on an exact match,
+                                 so every hit is a true hit  ->  100
+     everything else             raw unbounded scores  ->  relative, scaled
+                                 against the best hit in this result set
+
+   nlq_search delegates to hybrid_search and prefixes the branch it took
+   with "nlq_" (e.g. "nlq_hybrid"), so strip that before classifying.
+   ──────────────────────────────────────────────── */
+const CONF_ABSOLUTE = ['hybrid','hybrid_fallback'];
+const CONF_EXACT    = ['exact_reference','email'];
+
+function topScore(results){
+  return (results||[]).reduce((m,r)=>typeof r.score==='number'&&r.score>m?r.score:m, 0);
+}
+
+/* Resolves once per result set, not once per card. */
+function confContext(results, srcMode){
+  const branch=String(srcMode||'').replace(/^nlq_/,'');
+  const basis = CONF_ABSOLUTE.includes(branch) ? 'absolute'
+              : CONF_EXACT.includes(branch)    ? 'exact'
+              : 'relative';
+  return {branch, basis, max: topScore(results)};
+}
+
+function confScore(score, conf){
+  if(!conf) return null;
+  if(conf.basis==='exact') return 100;
+  if(typeof score!=='number') return null;
+  /* absolute: pipeline-normalised 0-1. relative: share of the best hit. */
+  const raw = conf.basis==='absolute' ? score : (conf.max>0 ? score/conf.max : null);
+  if(raw===null) return null;
+  return Math.min(100, Math.max(1, Math.round(raw*100)));
+}
+
+const CONF_SEGMENTS = 5;
+function confMeter(score, conf){
+  const pct=confScore(score, conf);
+  if(pct===null) return '';
+  const cls=pct>=75?'cs-high':pct>=50?'cs-med':'cs-low';
+  /* Segments are a rounded at-a-glance read (each = 100/CONF_SEGMENTS%);
+     the exact figure sits next to them, so rounding costs no precision.
+     Floor of 1 so a low-but-real match never renders as an empty bar. */
+  const filled=Math.min(CONF_SEGMENTS, Math.max(1, Math.round(pct/(100/CONF_SEGMENTS))));
+  const bars=Array.from({length:CONF_SEGMENTS},(_,i)=>
+    `<span class="cm-seg${i<filled?' on':''}"></span>`).join('');
+  const why={
+    absolute:'normalised BM25+vector score',
+    exact:'exact match on this field',
+    relative:'relative to the top hit — raw scores are unbounded on this path',
+  }[conf.basis];
+  const via=conf.branch?` · via ${conf.branch}`:'';
+  return `<span class="conf-meter ${cls}" title="Confidence ${pct}% — ${why}${via}"><span class="cm-bars">${bars}</span><span class="cm-num">${pct}%</span></span>`;
+}
+
 /* ── badge helpers ── */
 function sentBadge(s){
   if(!s) return '—';
   const cls=s==='positive'?'eb-covered':s==='frustrated'||s==='negative'?'eb-denied':'eb-neutral';
   return `<span class="ebadge ${cls}">${esc(s)}</span>`;
+}
+function coverageBadge(dec){
+  if(!dec) return '';
+  const m={covered:'eb-covered',partial:'eb-partial',denied:'eb-denied'};
+  return `<span class="ebadge ${m[dec]||'eb-neutral'}">${esc(dec)}</span>`;
 }
 function statusBadge(s){
   if(!s) return '—';
