@@ -825,14 +825,14 @@ function renderCard(r,mode,conf){
   if(et==='customer'){
     fields = fsec('Personal & Contact', 'var(--cust)', [
       fg('Email', hl(esc(r.email)) || '—', 'mono'),
-      fg('Phone', hl(esc(r.phone)) || '—', 'mono'),
+      fg('Phone', hl(esc(r.phone), {numeric:true}) || '—', 'mono'),
       fg('City', hl(esc(r.city)) || '—'),
       fg('Province', hl(esc(r.province)) || '—'),
       fg('Language', r.language || '—')
     ], true) + fsec('Plan Details', 'var(--ok)', [
       fg('Plan Type', hl(esc(r.plan_type)) || '—'),
       fg('Plan Code', hl(esc(r.plan_code)) || '—', 'mono'),
-      fg('Plan Number', hl(esc(r.plan_number)) || '—', 'mono'),
+      fg('Plan Number', hl(esc(r.plan_number), {numeric:true}) || '—', 'mono'),
       fg('Retailer', hl(esc(r.retailer)) || '—'),
       fg('Purchased', fmtDate(r.purchase_date)),
       fg('Plan Start', fmtDate(r.plan_start_date)),
@@ -856,7 +856,7 @@ function renderCard(r,mode,conf){
     fields = fsec('Partner Details', 'var(--part)', [
       fg('Role', ((r.is_provider ? 'Provider ' : '') + (r.is_supplier ? 'Supplier' : '')).trim() || '—'),
       fg('Email', hl(esc(r.email)) || '—', 'mono'),
-      fg('Phone', hl(esc(r.phone)) || '—', 'mono'),
+      fg('Phone', hl(esc(r.phone), {numeric:true}) || '—', 'mono'),
       fg('Status', r.review_status || '—'),
       fg('Coverage Radius', r.coverage_radius_km ? fmt0(r.coverage_radius_km)+' km' : '—'),
       fg('View Claims', `<a class="link" onclick="showPartnerClaims('${entityId}', '${esc(r.name).replace(/'/g, "\\'")}')">View all claims →</a>`),
@@ -877,7 +877,7 @@ function renderCard(r,mode,conf){
 
   if(et==='claim'){
     fields = fsec('Claim Details', 'var(--clm)', [
-      fg('Reference', hl(esc(r.reference)) || '—', 'mono'),
+      fg('Reference', hl(esc(r.reference), {numeric:true}) || '—', 'mono'),
       fg('Status', statusBadge(r.status)),
       fg('Progress', r.progress_status || '—'),
       fg('Channel', r.channel || '—'),
@@ -910,18 +910,18 @@ function renderCard(r,mode,conf){
       <div class="etype-icon ei-${et}">${init}</div>
       <div style="flex:1;min-width:0">
         <div class="ecard-title">${hl(esc(r.name||r.reference||'#'+entityId))}</div>
-        <div class="ecard-ref">${r.reference?hl(esc(r.reference))+' · ':''} id:${entityId||'—'}</div>
+        <div class="ecard-ref">${r.reference?hl(esc(r.reference), {numeric:true})+' · ':''} id:${entityId||'—'}</div>
       </div>
       <div class="ecard-badges">
         ${coverageBadge(dec)}
         ${r.is_active!==undefined ? `<div class="ebadge ${r.is_active?'eb-covered':'eb-denied'}">${r.is_active?'Active':'Inactive'}</div>` : ''}
-        ${confMeter(r.score, conf)}
+        ${confMeter(r.score, conf, r.confidence)}
       </div>
     </div>
     <div class="field-grid">${fields}</div>
     <div class="ecard-foot">
       <span class="method-tag mt-${mode}">${mode}</span>
-      ${r.score!==undefined ? `<span class="score-pill">score: ${(r.score||0).toFixed(4)}</span>` : ''}
+      ${r.score!==undefined && conf?.basis!=='exact' ? `<span class="score-pill">score: ${(r.score||0).toFixed(4)}</span>` : ''}
       ${r.created_at?`<span class="score-pill">${r.created_at.slice(0,10)}</span>`:''}
       ${r.indexed_at?`<span class="score-pill">indexed ${r.indexed_at.slice(0,10)}</span>`:''}
       <button class="btn sm" style="margin-left:auto" onclick="checkRecordDuplicates('${et}','${entityId}','${esc(r.name||r.reference||'').replace(/'/g,"\\'")}')">Check Duplicates</button>
@@ -997,7 +997,15 @@ function toggleField(id){
    with "nlq_" (e.g. "nlq_hybrid"), so strip that before classifying.
    ──────────────────────────────────────────────── */
 const CONF_ABSOLUTE = ['hybrid','hybrid_fallback'];
-const CONF_EXACT    = ['exact_reference','email'];
+/* Branches that select records by identity or set membership rather than by
+   scoring them. OpenSearch gives every hit in a pure filter/terms query the
+   same constant score (0), so there is no gradient to read — but the records
+   are matches by construction, which is a confidence of 100, not of nothing.
+   Without this list, claims reached through a hop or a filter showed no
+   confidence at all, because the relative basis divides by a top score of 0. */
+const CONF_EXACT    = ['exact_reference','email','multi_hop',
+                       'multi_hop_fallback_name_match','cross_join',
+                       'filter_only','email_fragment'];
 
 function topScore(results){
   return (results||[]).reduce((m,r)=>typeof r.score==='number'&&r.score>m?r.score:m, 0);
@@ -1012,19 +1020,27 @@ function confContext(results, srcMode){
   return {branch, basis, max: topScore(results)};
 }
 
-function confScore(score, conf){
+function confScore(score, conf, confidence){
   if(!conf) return null;
+  /* The hybrid paths now calibrate confidence server-side, where both the BM25
+     and the vector score are still available. Prefer it over anything inferred
+     from the ranking score alone. */
+  if(typeof confidence==='number')
+    return Math.min(100, Math.max(1, Math.round(confidence*100)));
   if(conf.basis==='exact') return 100;
   if(typeof score!=='number') return null;
-  /* absolute: pipeline-normalised 0-1. relative: share of the best hit. */
-  const raw = conf.basis==='absolute' ? score : (conf.max>0 ? score/conf.max : null);
-  if(raw===null) return null;
+  /* absolute: pipeline-normalised 0-1. relative: share of the best hit.
+     A relative set where every score is identical (or zero) carries no ranking
+     information, so report it as a full match rather than hiding the meter —
+     the records still satisfied the query. */
+  if(conf.basis!=='absolute' && !(conf.max>0)) return 100;
+  const raw = conf.basis==='absolute' ? score : score/conf.max;
   return Math.min(100, Math.max(1, Math.round(raw*100)));
 }
 
 const CONF_SEGMENTS = 5;
-function confMeter(score, conf){
-  const pct=confScore(score, conf);
+function confMeter(score, conf, confidence){
+  const pct=confScore(score, conf, confidence);
   if(pct===null) return '';
   const cls=pct>=75?'cs-high':pct>=50?'cs-med':'cs-low';
   /* Segments are a rounded at-a-glance read (each = 100/CONF_SEGMENTS%);
@@ -1329,14 +1345,63 @@ function esc(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').repla
    "stain" wherever it shows up on the card. Operates on ALREADY-ESCAPED plain
    text only (call as hl(esc(val))) — never on strings containing real HTML
    (links, badges), since a match inside markup/attributes would corrupt it. */
-function hl(escapedText){
+const rx=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+
+/* Which substrings of a value the query justifies marking.
+   Whitespace splitting alone is too coarse for the identifiers this system is
+   searched by: "anne.leblanc.029503@hotmail.com" is one whitespace token, so a
+   record whose email differs only in the sequence number gets nothing marked,
+   and the digits shared with a plan number are never shown as the link they
+   are. So each whitespace token also contributes its alphanumeric runs.
+   Longest-first ordering matters — the full address must win over its own
+   fragments, or "anne" marks first and leaves the rest of an exact match bare. */
+function hlTerms(query){
+  const out=new Set();
+  for(const tok of String(query||'').split(/\s+/)){
+    if(tok.length>=2) out.add(tok);
+    for(const part of tok.split(/[^A-Za-z0-9]+/)) if(part.length>=2) out.add(part);
+  }
+  return [...out].sort((a,b)=>b.length-a.length);
+}
+
+/* Digit runs the query shares with a value, for phone/reference/plan fields.
+   Phone search tolerates a wrong digit, so the matching record's number is NOT
+   identical to what was typed — marking only exact matches would leave the very
+   record the tolerance surfaced looking unmatched. Marking the longest common
+   run instead shows which part agreed and, by omission, which digit did not. */
+function digitRuns(query, plain){
+  const q=String(query||'').replace(/\D/g,''), v=String(plain||'').replace(/\D/g,'');
+  if(q.length<4 || !v) return [];
+  if(v.includes(q)) return [q];
+  let best='';
+  for(let i=0;i<q.length;i++)
+    for(let j=q.length;j>i+best.length;j--){
+      const sub=q.slice(i,j);
+      if(v.includes(sub)){ if(sub.length>best.length) best=sub; break }
+    }
+  return best.length>=4?[best]:[];
+}
+
+function hl(escapedText, opts){
   if(!escapedText || !lastSearchQuery) return escapedText;
-  const tokens=[...new Set(lastSearchQuery.split(/\s+/).filter(t=>t.length>=2))]
-    .sort((a,b)=>b.length-a.length)
-    .map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
-  if(!tokens.length) return escapedText;
-  const re=new RegExp('('+tokens.join('|')+')','gi');
-  return escapedText.replace(re,'<mark class="hl">$1</mark>');
+  let terms=hlTerms(lastSearchQuery);
+  if(opts && opts.numeric){
+    /* The rendered value keeps its separators (+1 596-468 4346) while the run
+       is bare digits, so match the digits with any non-digit allowed between. */
+    const plain=escapedText.replace(/\D/g,'');
+    for(const run of digitRuns(lastSearchQuery, plain))
+      terms.push(run.split('').map(rx).join('[^0-9]*'));
+    terms=[...new Set(terms)];
+  }
+  if(!terms.length) return escapedText;
+  const src=terms.map(t=>/\[\^0-9\]/.test(t)?t:rx(t));
+  const re=new RegExp('('+src.join('|')+')','gi');
+  /* Never mark inside the markup we just inserted. */
+  return escapedText.replace(re,(m,g,off,str)=>{
+    const before=str.slice(0,off);
+    if(before.lastIndexOf('<mark')>before.lastIndexOf('</mark>')) return m;
+    return '<mark class="hl">'+g+'</mark>';
+  });
 }
 function fmtDate(v){if(!v)return'—';return String(v).slice(0,10)}
 function fmt2(v){return v!=null?Number(v).toFixed(2):'0.00'}
